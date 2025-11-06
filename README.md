@@ -1,13 +1,17 @@
 # Проектная работа "Веб-ларек"
 
+[github]: https://github.com/vikusias/weblarek
+
 Стек: HTML, SCSS, TS, Vite
 
 Структура проекта:
+
 - src/ — исходные файлы проекта
 - src/components/ — папка с JS компонентами
 - src/components/base/ — папка с базовым кодом
 
 Важные файлы:
+
 - index.html — HTML-файл главной страницы
 - src/types/index.ts — файл с типами
 - src/main.ts — точка входа приложения
@@ -16,6 +20,7 @@
 - src/utils/utils.ts — файл с утилитами
 
 ## Установка и запуск
+
 Для установки и запуска проекта необходимо выполнить команды
 
 ```
@@ -29,6 +34,7 @@ npm run start
 yarn
 yarn start
 ```
+
 ## Сборка
 
 ```
@@ -40,7 +46,9 @@ npm run build
 ```
 yarn build
 ```
+
 # Интернет-магазин «Web-Larёk»
+
 «Web-Larёk» — это интернет-магазин с товарами для веб-разработчиков, где пользователи могут просматривать товары, добавлять их в корзину и оформлять заказы. Сайт предоставляет удобный интерфейс с модальными окнами для просмотра деталей товаров, управления корзиной и выбора способа оплаты, обеспечивая полный цикл покупки с отправкой заказов на сервер.
 
 ## Архитектура приложения
@@ -49,13 +57,14 @@ yarn build
 
 Model - слой данных, отвечает за хранение и изменение данных.  
 View - слой представления, отвечает за отображение данных на странице.  
-Presenter - презентер содержит основную логику приложения и  отвечает за связь представления и данных.
+Presenter - презентер содержит основную логику приложения и отвечает за связь представления и данных.
 
 Взаимодействие между классами обеспечивается использованием событийно-ориентированного подхода. Модели и Представления генерируют события при изменении данных или взаимодействии пользователя с приложением, а Презентер обрабатывает эти события используя методы как Моделей, так и Представлений.
 
 ### Базовый код
 
 #### Класс Component
+
 Является базовым классом для всех компонентов интерфейса.
 Класс является дженериком и принимает в переменной `T` тип данных, которые могут быть переданы в метод `render` для отображения.
 
@@ -69,8 +78,8 @@ Presenter - презентер содержит основную логику п
 `render(data?: Partial<T>): HTMLElement` - Главный метод класса. Он принимает данные, которые необходимо отобразить в интерфейсе, записывает эти данные в поля класса и возвращает ссылку на DOM-элемент. Предполагается, что в классах, которые будут наследоваться от `Component` будут реализованы сеттеры для полей с данными, которые будут вызываться в момент вызова `render` и записывать данные в необходимые DOM элементы.  
 `setImage(element: HTMLImageElement, src: string, alt?: string): void` - утилитарный метод для модификации DOM-элементов `<img>`
 
-
 #### Класс Api
+
 Содержит в себе базовую логику отправки запросов.
 
 Конструктор:  
@@ -86,15 +95,186 @@ Presenter - презентер содержит основную логику п
 `handleResponse(response: Response): Promise<object>` - защищенный метод проверяющий ответ сервера на корректность и возвращающий объект с данными полученный от сервера или отклоненный промис, в случае некорректных данных.
 
 #### Класс EventEmitter
+
 Брокер событий реализует паттерн "Наблюдатель", позволяющий отправлять события и подписываться на события, происходящие в системе. Класс используется для связи слоя данных и представления.
 
 Конструктор класса не принимает параметров.
 
 Поля класса:  
-`_events: Map<string | RegExp, Set<Function>>)` -  хранит коллекцию подписок на события. Ключи коллекции - названия событий или регулярное выражение, значения - коллекция функций обработчиков, которые будут вызваны при срабатывании события.
+`_events: Map<string | RegExp, Set<Function>>)` - хранит коллекцию подписок на события. Ключи коллекции - названия событий или регулярное выражение, значения - коллекция функций обработчиков, которые будут вызваны при срабатывании события.
 
 Методы класса:  
 `on<T extends object>(event: EventName, callback: (data: T) => void): void` - подписка на событие, принимает название события и функцию обработчик.  
 `emit<T extends object>(event: string, data?: T): void` - инициализация события. При вызове события в метод передается название события и объект с данными, который будет использован как аргумент для вызова обработчика.  
 `trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void` - возвращает функцию, при вызове которой инициализируется требуемое в параметрах событие с передачей в него данных из второго параметра.
 
+### Данные
+
+#### Товар
+
+interface IProduct {
+id: string; // Уникальный идентификатор товара
+description: string; // Описание товара
+image: string; // URL изображения товара
+title: string; // Название товара
+category: string; // Категория товара
+price: number | null; // Цена товара, null – товар бесценный
+}
+
+#### Покупатель
+
+interface IBuyer {
+paymentMethod: TPayment; // Способ оплаты: card | cash
+emailAddress: string; // Электронная почта
+phoneNumber: string; // Телефон
+deliveryAddress: string; // Адрес доставки
+}
+
+### Модели данных
+
+#### Каталог товаров Catalog
+
+class Catalog {
+private productList: IProduct[] = [];
+private selectedProduct: IProduct | null = null;
+
+Устанавливает список товаров
+setProducts(products: IProduct[]): void {
+this.productList = products;
+}
+
+Возвращает все товары
+getProducts(): IProduct[] {
+return this.productList;
+}
+
+Находит товар по идентификатору
+getProductById(id: string): IProduct | null {
+return this.productList.find(({ id: productId }) => productId === id) || null;
+}
+
+Устанавливает выбранный товар
+selectProduct(product: IProduct | null): void {
+this.selectedProduct = product;
+}
+
+Получает выбранный товар
+getSelectedProduct(): IProduct | null {
+return this.selectedProduct;
+}
+}
+
+#### Корзина Basket
+
+class Basket {
+private cartItems: IProduct[] = [];
+
+Получает все товары в корзине
+getItems(): IProduct[] {
+return this.cartItems;
+}
+
+Добавляет товар в корзину
+addProduct(item: IProduct): void {
+this.cartItems.push(item);
+}
+
+Удаляет товар из корзины по объекту
+removeProduct(toRemove: IProduct): void {
+this.cartItems = this.cartItems.filter(({ id }) => id !== toRemove.id);
+}
+
+Очищает корзину
+clearBasket(): void {
+this.cartItems = [];
+}
+
+Вычисляет общую стоимость товаров
+getTotalCost(): number {
+return this.cartItems.reduce((total, { price }) => {
+return price ? total + price : total;
+}, 0);
+}
+
+Получает количество товаров
+getItemCount(): number {
+return this.cartItems.length;
+}
+
+Проверяет наличие товара по id
+hasProduct(productId: string): boolean {
+return this.cartItems.some(({ id }) => id === productId);
+}
+}
+
+#### Покупатель Customer
+
+class Customer {
+private buyerData: IBuyer;
+
+constructor() {
+this.buyerData = {
+paymentMethod: "cash",
+emailAddress: "",
+phoneNumber: "",
+deliveryAddress: ""
+};
+}
+
+Устанавливает способ оплаты
+setPaymentMethod(method: TPayment): void {
+this.buyerData.paymentMethod = method;
+}
+
+Устанавливает адрес доставки
+setAddress(address: string): void {
+this.buyerData.deliveryAddress = address;
+}
+
+Устанавливает телефон
+setPhoneNumber(phone: string): void {
+this.buyerData.phoneNumber = phone;
+}
+
+Устанавливает email
+setEmail(email: string): void {
+this.buyerData.emailAddress = email;
+}
+
+Получает все данные покупателя
+getBuyerData(): IBuyer {
+return this.buyerData;
+}
+
+Очищает все данные
+clearData(): void {
+this.buyerData = {
+paymentMethod: "cash",
+emailAddress: "",
+phoneNumber: "",
+deliveryAddress: ""
+};
+}
+
+Проверяет валидность данных (примерная реализация)
+checkValidity(): TBuyerValidityMessages {
+// Реализуйте проверку данных и возвращайте сообщения
+return {}; // Заглушка
+}
+}
+
+### Слой API взаимодействия
+
+class ProductApi {
+constructor(private api: IApi) {}
+
+Получает список товаров
+getProducts(): Promise<IGetProductsApiResponse> {
+return this.api.fetchProducts();
+}
+
+Оформляет заказ
+order(data: IOrderApiRequest): Promise<IOrderApiResponse> {
+return this.api.submitOrder(data);
+}
+}
