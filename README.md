@@ -111,7 +111,7 @@ Presenter - презентер содержит основную логику п
 ### Данные
 
 #### Товар
-
+```
 interface IProduct {
 id: string; // Уникальный идентификатор товара
 description: string; // Описание товара
@@ -120,45 +120,47 @@ title: string; // Название товара
 category: string; // Категория товара
 price: number | null; // Цена товара, null – товар бесценный
 }
+```
 
 #### Покупатель
-
+```
 interface IBuyer {
 paymentMethod: TPayment; // Способ оплаты: card | cash
 emailAddress: string; // Электронная почта
 phoneNumber: string; // Телефон
 deliveryAddress: string; // Адрес доставки
 }
+```
 
 ### Модели данных
 
 #### Каталог товаров Catalog
 
-class Catalog {
+- class Catalog {
 private productList: IProduct[] = [];
 private selectedProduct: IProduct | null = null;
 
-Устанавливает список товаров
+- Устанавливает список товаров
 setProducts(products: IProduct[]): void {
 this.productList = products;
 }
 
-Возвращает все товары
+- Возвращает все товары
 getProducts(): IProduct[] {
 return this.productList;
 }
 
-Находит товар по идентификатору
+- Находит товар по идентификатору
 getProductById(id: string): IProduct | null {
 return this.productList.find(({ id: productId }) => productId === id) || null;
 }
 
-Устанавливает выбранный товар
+- Устанавливает выбранный товар
 selectProduct(product: IProduct | null): void {
 this.selectedProduct = product;
 }
 
-Получает выбранный товар
+- Получает выбранный товар
 getSelectedProduct(): IProduct | null {
 return this.selectedProduct;
 }
@@ -166,49 +168,49 @@ return this.selectedProduct;
 
 #### Корзина Basket
 
-class Basket {
+- class Basket {
 private cartItems: IProduct[] = [];
 
-Получает все товары в корзине
+- Получает все товары в корзине
 getItems(): IProduct[] {
 return this.cartItems;
 }
 
-Добавляет товар в корзину
+- Добавляет товар в корзину
 addProduct(item: IProduct): void {
 this.cartItems.push(item);
 }
 
-Удаляет товар из корзины по объекту
+- Удаляет товар из корзины по объекту
 removeProduct(toRemove: IProduct): void {
 this.cartItems = this.cartItems.filter(({ id }) => id !== toRemove.id);
 }
 
-Очищает корзину
+- Очищает корзину
 clearBasket(): void {
 this.cartItems = [];
 }
 
-Вычисляет общую стоимость товаров
+- Вычисляет общую стоимость товаров
 getTotalCost(): number {
 return this.cartItems.reduce((total, { price }) => {
 return price ? total + price : total;
 }, 0);
 }
 
-Получает количество товаров
+- Получает количество товаров
 getItemCount(): number {
 return this.cartItems.length;
 }
 
-Проверяет наличие товара по id
+- Проверяет наличие товара по id
 hasProduct(productId: string): boolean {
 return this.cartItems.some(({ id }) => id === productId);
 }
 }
 
 #### Покупатель Customer
-
+```
 class Customer {
 private buyerData: IBuyer;
 
@@ -220,33 +222,46 @@ phoneNumber: "",
 deliveryAddress: ""
 };
 }
+```
 
-Устанавливает способ оплаты
+- Устанавливает способ оплаты
+```
 setPaymentMethod(method: TPayment): void {
 this.buyerData.paymentMethod = method;
 }
+```
 
-Устанавливает адрес доставки
+- Устанавливает адрес доставки
+```
 setAddress(address: string): void {
 this.buyerData.deliveryAddress = address;
 }
+```
 
-Устанавливает телефон
+- Устанавливает телефон
+```
 setPhoneNumber(phone: string): void {
 this.buyerData.phoneNumber = phone;
 }
+```
 
-Устанавливает email
+- Устанавливает email
+```
 setEmail(email: string): void {
 this.buyerData.emailAddress = email;
 }
+```
 
-Получает все данные покупателя
+
+- Получает все данные покупателя
+```
 getBuyerData(): IBuyer {
 return this.buyerData;
 }
+```
 
-Очищает все данные
+- Очищает все данные
+```
 clearData(): void {
 this.buyerData = {
 paymentMethod: "cash",
@@ -255,13 +270,16 @@ phoneNumber: "",
 deliveryAddress: ""
 };
 }
+```
 
-Проверяет валидность данных (примерная реализация)
+- Проверяет валидность данных (примерная реализация)
+```
 checkValidity(): TBuyerValidityMessages {
 // Реализуйте проверку данных и возвращайте сообщения
 return {}; // Заглушка
 }
 }
+```
 
 ### Слой API взаимодействия
 
