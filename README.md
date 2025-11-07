@@ -136,78 +136,54 @@ deliveryAddress: string; // Адрес доставки
 
 #### Каталог товаров Catalog
 
-- class Catalog {
-private productList: IProduct[] = [];
-private selectedProduct: IProduct | null = null;
+Этот класс управляет списком товаров и выбранным товаром.
 
-- Устанавливает список товаров
-setProducts(products: IProduct[]): void {
-this.productList = products;
-}
+Свойства:
 
-- Возвращает все товары
-getProducts(): IProduct[] {
-return this.productList;
-}
+```
+productList: IProduct[] — внутренний массив всех товаров.
+selectedProduct: IProduct | null — текущий выбранный товар или null, если товар не выбран.
+```
 
-- Находит товар по идентификатору
-getProductById(id: string): IProduct | null {
-return this.productList.find(({ id: productId }) => productId === id) || null;
-}
+ Методы:
 
-- Устанавливает выбранный товар
-selectProduct(product: IProduct | null): void {
-this.selectedProduct = product;
-}
+- setProducts(products: IProduct[]): void — устанавливает список всех товаров, заменяя текущий массив.
 
-- Получает выбранный товар
-getSelectedProduct(): IProduct | null {
-return this.selectedProduct;
-}
-}
+- getProducts(): IProduct[] — возвращает текущий список всех товаров.
+
+- getProductById(id: string): IProduct | null — ищет товар по уникальному идентификатору и возвращает его или null, если товар не найден.
+  
+- selectProduct(product: IProduct | null): void — устанавливает выбранный товар. Передается объект товара или null.
+  
+- getSelectedProduct(): IProduct | null — возвращает текущий выбранный товар или null, если товар не выбран.
+
 
 #### Корзина Basket
 
-- class Basket {
-private cartItems: IProduct[] = [];
+Этот класс реализует корзину покупок, управляя товарами в ней.
 
-- Получает все товары в корзине
-getItems(): IProduct[] {
-return this.cartItems;
-}
+Свойства: 
 
-- Добавляет товар в корзину
-addProduct(item: IProduct): void {
-this.cartItems.push(item);
-}
+```
+cartItems: IProduct[] — внутренний массив товаров, добавленных в корзину.
+```
 
-- Удаляет товар из корзины по объекту
-removeProduct(toRemove: IProduct): void {
-this.cartItems = this.cartItems.filter(({ id }) => id !== toRemove.id);
-}
+ Методы:
 
-- Очищает корзину
-clearBasket(): void {
-this.cartItems = [];
-}
+- getItems(): IProduct[] — возвращает все товары, находящиеся в корзине.
+  
+- addProduct(item: IProduct): void — добавляет товар в корзину.
 
-- Вычисляет общую стоимость товаров
-getTotalCost(): number {
-return this.cartItems.reduce((total, { price }) => {
-return price ? total + price : total;
-}, 0);
-}
+- removeProduct(toRemove: IProduct): void — удаляет товар из корзины по объекту.
 
-- Получает количество товаров
-getItemCount(): number {
-return this.cartItems.length;
-}
+- clearBasket(): void — очищает корзину, удаляя все товары.
 
-- Проверяет наличие товара по id
-hasProduct(productId: string): boolean {
-return this.cartItems.some(({ id }) => id === productId);
-}
-}
+- getTotalCost(): number — вычисляет суммарную стоимость товаров в корзине.
+
+- getItemCount(): number — возвращает количество товаров в корзине.
+
+- hasProduct(productId: string): boolean — проверяет наличие товара по его идентификатору.
+
 
 #### Покупатель Customer
 ```
@@ -282,16 +258,16 @@ return {}; // Заглушка
 ```
 
 ### Слой API взаимодействия
-
-class ProductApi {
+```
+- class ProductApi {
 constructor(private api: IApi) {}
-
-Получает список товаров
+```
+- Получает список товаров
 getProducts(): Promise<IGetProductsApiResponse> {
 return this.api.fetchProducts();
 }
 
-Оформляет заказ
+- Оформляет заказ
 order(data: IOrderApiRequest): Promise<IOrderApiResponse> {
 return this.api.submitOrder(data);
 }
