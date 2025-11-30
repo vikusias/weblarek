@@ -139,77 +139,77 @@ deliveryAddress: string; // Адрес доставки
 #### Каталог товаров Catalog
 
 - class Catalog {
-  private productList: IProduct[] = [];
-  private selectedProduct: IProduct | null = null;
+private productList: IProduct[] = [];
+private selectedProduct: IProduct | null = null;
 
 - Устанавливает список товаров
-  setProducts(products: IProduct[]): void {
-  this.productList = products;
-  }
+setProducts(products: IProduct[]): void {
+this.productList = products;
+}
 
 - Возвращает все товары
-  getProducts(): IProduct[] {
-  return this.productList;
-  }
+getProducts(): IProduct[] {
+return this.productList;
+}
 
 - Находит товар по идентификатору
-  getProductById(id: string): IProduct | null {
-  return this.productList.find(({ id: productId }) => productId === id) || null;
-  }
+getProductById(id: string): IProduct | null {
+return this.productList.find(({ id: productId }) => productId === id) || null;
+}
 
 - Устанавливает выбранный товар
-  selectProduct(product: IProduct | null): void {
-  this.selectedProduct = product;
-  }
+selectProduct(product: IProduct | null): void {
+this.selectedProduct = product;
+}
 
 - Получает выбранный товар
-  getSelectedProduct(): IProduct | null {
-  return this.selectedProduct;
-  }
-  }
+getSelectedProduct(): IProduct | null {
+return this.selectedProduct;
+}
+}
 
 #### Корзина Basket
 
 - class Basket {
-  private cartItems: IProduct[] = [];
+private cartItems: IProduct[] = [];
 
 - Получает все товары в корзине
-  getItems(): IProduct[] {
-  return this.cartItems;
-  }
+getItems(): IProduct[] {
+return this.cartItems;
+}
 
 - Добавляет товар в корзину
-  addProduct(item: IProduct): void {
-  this.cartItems.push(item);
-  }
+addProduct(item: IProduct): void {
+this.cartItems.push(item);
+}
 
 - Удаляет товар из корзины по объекту
-  removeProduct(toRemove: IProduct): void {
-  this.cartItems = this.cartItems.filter(({ id }) => id !== toRemove.id);
-  }
+removeProduct(toRemove: IProduct): void {
+this.cartItems = this.cartItems.filter(({ id }) => id !== toRemove.id);
+}
 
 - Очищает корзину
-  clearBasket(): void {
-  this.cartItems = [];
-  }
+clearBasket(): void {
+this.cartItems = [];
+}
 
 - Вычисляет общую стоимость товаров
-  getTotalCost(): number {
-  return this.cartItems.reduce((total, { price }) => {
-  return price ? total + price : total;
-  }, 0);
-  }
+getTotalCost(): number {
+return this.cartItems.reduce((total, { price }) => {
+return price ? total + price : total;
+}, 0);
+}
 
 - Получает количество товаров
-  getItemCount(): number {
-  return this.cartItems.length;
-  }
+getItemCount(): number {
+return this.cartItems.length;
+}
 
 - Проверяет наличие товара по id
-  hasProduct(productId: string): boolean {
-  return this.cartItems.some(({ id }) => id === productId);
-  }
-  }
+hasProduct(productId: string): boolean {
+return this.cartItems.some(({ id }) => id === productId);
+}
+}
 
 #### Покупатель Customer
 
@@ -291,16 +291,16 @@ return {}; // Заглушка
 ```
 
 ### Слой API взаимодействия
-
-class ProductApi {
+```
+- class ProductApi {
 constructor(private api: IApi) {}
-
-Получает список товаров
+```
+- Получает список товаров
 getProducts(): Promise<IGetProductsApiResponse> {
 return this.api.fetchProducts();
 }
 
-Оформляет заказ
+- Оформляет заказ
 order(data: IOrderApiRequest): Promise<IOrderApiResponse> {
 return this.api.submitOrder(data);
 }
