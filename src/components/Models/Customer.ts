@@ -1,12 +1,12 @@
-import { IBuyer, TBuyerValidityMessages, TPayment } from '../../types';
-import { eventNames } from '../../utils/constants.ts';
-import { IEvents } from '../base/Events.ts';
+import { IBuyer, TBuyerValidityMessages, TPayment } from "../../types";
+import { eventNames } from "../../utils/constants.ts";
+import { IEvents } from "../base/Events.ts";
 
 export class Customer {
-  private payment: TPayment = '';
-  private address: string = '';
-  private phone: string = '';
-  private email: string = '';
+  private payment: TPayment = "";
+  private address: string = "";
+  private phone: string = "";
+  private email: string = "";
 
   constructor(protected readonly events: IEvents) {}
 
@@ -46,10 +46,10 @@ export class Customer {
 
   // Очистить все поля
   clear(): void {
-    this.payment = '';
-    this.address = '';
-    this.phone = '';
-    this.email = '';
+    this.payment = "";
+    this.address = "";
+    this.phone = "";
+    this.email = "";
   }
 
   // Проверка валидности данных и возврат ошибок
@@ -57,19 +57,19 @@ export class Customer {
     const errors: TBuyerValidityMessages = {};
 
     if (!this.payment) {
-      errors.payment = 'Выберите способ оплаты';
+      errors.payment = "Выберите способ оплаты";
     }
 
     if (!this.address.trim()) {
-      errors.address = 'Необходимо указать адрес';
+      errors.address = "Необходимо указать адрес";
     }
 
     if (!this.phone.trim()) {
-      errors.phone = 'Необходимо указать телефон';
+      errors.phone = "Необходимо указать телефон";
     }
 
     if (!this.email.trim()) {
-      errors.email = 'Необходимо указать email';
+      errors.email = "Необходимо указать email";
     }
 
     return errors;
