@@ -1,3 +1,5 @@
+import { categoryMap } from "../utils/constants.ts";
+
 export type ApiPostMethods = "POST" | "PUT" | "DELETE";
 
 export interface IApi {
@@ -47,3 +49,5 @@ export interface IOrderApiResponse {
   id: string;
   total: number;
 }
+
+export type TCategoryNames = keyof typeof categoryMap;

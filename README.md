@@ -111,6 +111,7 @@ Presenter - презентер содержит основную логику п
 ### Данные
 
 #### Товар
+
 ```
 interface IProduct {
 id: string; // Уникальный идентификатор товара
@@ -123,6 +124,7 @@ price: number | null; // Цена товара, null – товар бесцен
 ```
 
 #### Покупатель
+
 ```
 interface IBuyer {
 paymentMethod: TPayment; // Способ оплаты: card | cash
@@ -137,79 +139,80 @@ deliveryAddress: string; // Адрес доставки
 #### Каталог товаров Catalog
 
 - class Catalog {
-private productList: IProduct[] = [];
-private selectedProduct: IProduct | null = null;
+  private productList: IProduct[] = [];
+  private selectedProduct: IProduct | null = null;
 
 - Устанавливает список товаров
-setProducts(products: IProduct[]): void {
-this.productList = products;
-}
+  setProducts(products: IProduct[]): void {
+  this.productList = products;
+  }
 
 - Возвращает все товары
-getProducts(): IProduct[] {
-return this.productList;
-}
+  getProducts(): IProduct[] {
+  return this.productList;
+  }
 
 - Находит товар по идентификатору
-getProductById(id: string): IProduct | null {
-return this.productList.find(({ id: productId }) => productId === id) || null;
-}
+  getProductById(id: string): IProduct | null {
+  return this.productList.find(({ id: productId }) => productId === id) || null;
+  }
 
 - Устанавливает выбранный товар
-selectProduct(product: IProduct | null): void {
-this.selectedProduct = product;
-}
+  selectProduct(product: IProduct | null): void {
+  this.selectedProduct = product;
+  }
 
 - Получает выбранный товар
-getSelectedProduct(): IProduct | null {
-return this.selectedProduct;
-}
-}
+  getSelectedProduct(): IProduct | null {
+  return this.selectedProduct;
+  }
+  }
 
 #### Корзина Basket
 
 - class Basket {
-private cartItems: IProduct[] = [];
+  private cartItems: IProduct[] = [];
 
 - Получает все товары в корзине
-getItems(): IProduct[] {
-return this.cartItems;
-}
+  getItems(): IProduct[] {
+  return this.cartItems;
+  }
 
 - Добавляет товар в корзину
-addProduct(item: IProduct): void {
-this.cartItems.push(item);
-}
+  addProduct(item: IProduct): void {
+  this.cartItems.push(item);
+  }
 
 - Удаляет товар из корзины по объекту
-removeProduct(toRemove: IProduct): void {
-this.cartItems = this.cartItems.filter(({ id }) => id !== toRemove.id);
-}
+  removeProduct(toRemove: IProduct): void {
+  this.cartItems = this.cartItems.filter(({ id }) => id !== toRemove.id);
+  }
 
 - Очищает корзину
-clearBasket(): void {
-this.cartItems = [];
-}
+  clearBasket(): void {
+  this.cartItems = [];
+  }
 
 - Вычисляет общую стоимость товаров
-getTotalCost(): number {
-return this.cartItems.reduce((total, { price }) => {
-return price ? total + price : total;
-}, 0);
-}
+  getTotalCost(): number {
+  return this.cartItems.reduce((total, { price }) => {
+  return price ? total + price : total;
+  }, 0);
+  }
 
 - Получает количество товаров
-getItemCount(): number {
-return this.cartItems.length;
-}
+  getItemCount(): number {
+  return this.cartItems.length;
+  }
 
 - Проверяет наличие товара по id
-hasProduct(productId: string): boolean {
-return this.cartItems.some(({ id }) => id === productId);
-}
-}
+  hasProduct(productId: string): boolean {
+  return this.cartItems.some(({ id }) => id === productId);
+  }
+  }
 
 #### Покупатель Customer
+
 ```
 class Customer {
 private buyerData: IBuyer;
@@ -225,6 +228,7 @@ deliveryAddress: ""
 ```
 
 - Устанавливает способ оплаты
+
 ```
 setPaymentMethod(method: TPayment): void {
 this.buyerData.paymentMethod = method;
@@ -232,6 +236,7 @@ this.buyerData.paymentMethod = method;
 ```
 
 - Устанавливает адрес доставки
+
 ```
 setAddress(address: string): void {
 this.buyerData.deliveryAddress = address;
@@ -239,6 +244,7 @@ this.buyerData.deliveryAddress = address;
 ```
 
 - Устанавливает телефон
+
 ```
 setPhoneNumber(phone: string): void {
 this.buyerData.phoneNumber = phone;
@@ -246,14 +252,15 @@ this.buyerData.phoneNumber = phone;
 ```
 
 - Устанавливает email
+
 ```
 setEmail(email: string): void {
 this.buyerData.emailAddress = email;
 }
 ```
 
-
 - Получает все данные покупателя
+
 ```
 getBuyerData(): IBuyer {
 return this.buyerData;
@@ -261,6 +268,7 @@ return this.buyerData;
 ```
 
 - Очищает все данные
+
 ```
 clearData(): void {
 this.buyerData = {
@@ -273,6 +281,7 @@ deliveryAddress: ""
 ```
 
 - Проверяет валидность данных (примерная реализация)
+
 ```
 checkValidity(): TBuyerValidityMessages {
 // Реализуйте проверку данных и возвращайте сообщения
@@ -296,3 +305,272 @@ order(data: IOrderApiRequest): Promise<IOrderApiResponse> {
 return this.api.submitOrder(data);
 }
 }
+
+##Представления (Views)
+
+Все компоненты UI наследуются от базового класса Component.
+
+```
+HeaderView
+```
+
+Назначение: отображает шапку сайта, включая кнопку для открытия корзины.
+Конструктор:
+
+```
+constructor(container: HTMLElement, events: IEvents)
+```
+
+— принимает DOM-элемент контейнера и объект событий для взаимодействия.
+
+Свойства:
+
+-htmlButtonElement — кнопка для открытия корзины
+-basketCounterElement — отображение количества товаров в корзине
+
+Методы:
+
+-set count(value: number) — обновляет число товаров рядом с иконкой корзины
+
+```
+ModalView
+```
+
+Назначение: реализует диалоговое окно для отображения динамического контента.
+Конструктор:
+
+```
+constructor(container: HTMLElement)
+```
+
+— получает контейнер для модальных окон.
+
+Свойства:
+
+-modalContentElem — область для вставки содержимого
+-closeBtnElem — кнопка закрытия
+
+Методы:
+-set content(content: HTMLElement) — задает внутреннее содержимое модального окна
+-open() — отображает окно и устанавливает обработчики закрытия (например, по клику вне содержимого или по Esc)
+-close() — закрывает окно и удаляет слушатели событий
+
+```
+GalleryView
+```
+
+Назначение: контейнер для отображения карточек товаров.
+Конструктор:
+
+```
+constructor(container: HTMLElement)
+```
+
+— задает DOM-элемент, в который вставляются карточки.
+
+Методы:
+-set items(catalogItems: HTMLElement[]) — наполняет контейнер карточками товаров
+
+```
+CardView
+```
+
+(базовый класс карточек)
+
+Назначение: базовый класс для отображения карточки товара.
+
+Конструктор:
+
+```
+constructor(container: HTMLElement)
+```
+
+— принимает контейнер.
+
+Свойства:
+-titleElem — название товара
+-priceElem — цена товара
+
+Методы:
+-set title(value: string) — задает название
+-set price(value: string) — задает цену
+-static getCategoryClassByCategoryName(categoryName: TCategoryNames): string — возвращает CSS-класс для категории
+
+```
+CardBasketView
+```
+
+(карточка товара в корзине) — наследуется от CardView
+Конструктор:
+
+```
+constructor(container: HTMLElement, actions?: TActions)
+```
+
+— принимает контейнер и объект обработчиков событий.
+
+Свойства:
+-indexElem — порядковый номер в корзине
+-btnElem — кнопка удаления товара из корзины
+
+Методы:
+-set index(index: number) — обновляет порядковый номер
+
+```
+CardCatalogView
+```
+
+(карточка товара в каталоге) — наследуется от CardView
+
+Конструктор:
+
+constructor(container: HTMLElement, actions?: TActions)
+
+```
+— контейнер и обработчики.
+
+Свойства:
+-categoryElem — категория товара
+-imageElem — изображение товара
+
+Методы:
+
+-set category(category: TCategoryNames) — задает категорию и соответствующий стиль
+-set image(imageSrc: string) — устанавливает адрес изображения
+```
+
+CardPreviewView
+
+```
+(предпросмотр товара)
+
+Конструктор:
+```
+
+constructor(container: HTMLElement, actions?: TActions)
+
+```
+Свойства:
+
+-descriptionElement — описание товара
+-buttonElement — кнопка добавления/удаления из корзины
+-categoryElem — категория
+-imageElem — изображение товара
+
+Методы:
+-set canBuy(canBuy: boolean) — блокирует кнопку, если товар уже в корзине
+-set buttonText(buttonText: string) — задает текст кнопки
+-set description(description: string) — описание товара
+-set category(category: TCategoryNames) — категория
+-set image(imageSrc: string) — изображение
+```
+
+BasketView
+
+```
+Назначение: контейнер для отображения всех товаров, добавленных в корзину.
+
+Конструктор:
+```
+
+constructor(container: HTMLElement, events: IEvents)
+
+```
+
+Свойства:
+
+-listElem — контейнер для элементов
+-btnElem — кнопка оформления заказа
+-priceElem — итоговая сумма
+
+Методы:
+-set items(value: HTMLElement[]) — отображает список товаров
+-set total(value: number) — обновляет сумму
+
+```
+
+FormView
+
+```
+(базовый класс формы)
+
+Конструктор:
+```
+
+constructor(container: HTMLElement, actions: TFormViewActions)
+
+```
+
+Свойства:
+
+-submitBtnElem — кнопка отправки формы
+-errorsElem — область для отображения ошибок
+
+Методы:
+-set error(error: string) — показывает ошибку
+```
+
+OrderFormView
+
+```
+(форма оформления заказа — первый шаг)
+
+Конструктор:
+```
+
+constructor(container: HTMLElement, events: IEvents)
+
+```
+
+Свойства:
+
+-paymentBtnElems — кнопки выбора способа оплаты
+-addressInputElem — поле для адреса
+
+Методы:
+-set payment(payment: TPayment) — активирует выбранный способ оплаты
+-set address(address: string) — заполняет адрес
+```
+
+ContactsFormView
+
+```
+(второй шаг — ввод контактов)
+
+Конструктор:
+```
+
+constructor(container: HTMLElement, events: IEvents)
+
+```
+
+Свойства:
+
+-emailInputElem — поле для email
+-phoneInputElem — поле для телефона
+
+Методы:
+-set email(email: string) — ввод email
+-set phone(phone: string) — ввод номера телефона
+```
+
+OrderSuccessView
+
+```
+Конструктор:
+```
+
+constructor(container: HTMLElement, events: IEvents)
+
+```
+
+Свойства:
+
+-descriptionElem — показывает сумму заказа
+-closeBtnElem — кнопка закрытия окна
+
+Методы:
+-set total(total: number) — отображает итоговую сумму заказа
+
+Эта структура отражает разделение ответственности, использование наследования и взаимодействие через события, что делает архитектуру гибкой и расширяемой.
+```

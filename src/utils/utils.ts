@@ -1,19 +1,24 @@
 import { IErrorApiResponse } from "../types";
 
+// Преобразование строки из PascalCase в kebab-case
 export function pascalToKebab(value: string): string {
-  return value.replace(/([a-z0–9])([A-Z])/g, "$1-$2").toLowerCase();
+  return value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
+// Проверка, является ли значение селектором (строкой)
 export function isSelector(x: any): x is string {
   return typeof x === "string" && x.length > 1;
 }
 
+// Проверка, является ли значение пустым
 export function isEmpty(value: any): boolean {
   return value === null || value === undefined;
 }
 
+// Тип для коллекции селекторов
 export type SelectorCollection<T> = string | NodeListOf<Element> | T[];
 
+// Получение массива элементов по селектору
 export function ensureAllElements<T extends HTMLElement>(
   selectorElement: SelectorCollection<T>,
   context: HTMLElement = document as unknown as HTMLElement
@@ -30,8 +35,10 @@ export function ensureAllElements<T extends HTMLElement>(
   throw new Error(`Unknown selector element`);
 }
 
+// Тип для элемента или селектора
 export type SelectorElement<T> = T | string;
 
+// Получение одного элемента по селектору
 export function ensureElement<T extends HTMLElement>(
   selectorElement: SelectorElement<T>,
   context?: HTMLElement
@@ -39,29 +46,35 @@ export function ensureElement<T extends HTMLElement>(
   if (isSelector(selectorElement)) {
     const elements = ensureAllElements<T>(selectorElement, context);
     if (elements.length > 1) {
-      console.warn(`selector ${selectorElement} return more then one element`);
+      console.warn(
+        `selector ${selectorElement} возвращает более одного элемента`
+      );
     }
     if (elements.length === 0) {
-      throw new Error(`selector ${selectorElement} return nothing`);
+      throw new Error(
+        `selector ${selectorElement} не вернул ни одного элемента`
+      );
     }
-    return elements.pop() as T;
+    return elements[0];
   }
   if (selectorElement instanceof HTMLElement) {
     return selectorElement as T;
   }
-  throw new Error("Unknown selector element");
+  throw new Error("Неизвестный тип селектора");
 }
 
+// Клонирование шаблона
 export function cloneTemplate<T extends HTMLElement>(
   query: string | HTMLTemplateElement
 ): T {
   const template = ensureElement(query) as HTMLTemplateElement;
   if (!template.content.firstElementChild) {
-    throw new Error(`Template ${query} has no content`);
+    throw new Error(`Шаблон ${query} не содержит содержимого`);
   }
   return template.content.firstElementChild.cloneNode(true) as T;
 }
 
+// Создание имени и класса по BEM-методу
 export function bem(
   block: string,
   element?: string,
@@ -76,6 +89,7 @@ export function bem(
   };
 }
 
+// Получение свойств объекта, включая свойства прототипа
 export function getObjectProperties(
   obj: object,
   filter?: (name: string, prop: PropertyDescriptor) => boolean
@@ -83,27 +97,23 @@ export function getObjectProperties(
   return Object.entries(
     Object.getOwnPropertyDescriptors(Object.getPrototypeOf(obj))
   )
-    .filter(([name, prop]: [string, PropertyDescriptor]) =>
+    .filter(([name, prop]) =>
       filter ? filter(name, prop) : name !== "constructor"
     )
     .map(([name]) => name);
 }
 
-/**
- * Устанавливает dataset атрибуты элемента
- */
+// Установка dataset атрибутов элемента
 export function setElementData<T extends Record<string, unknown> | object>(
   el: HTMLElement,
   data: T
-) {
+): void {
   for (const key in data) {
     el.dataset[key] = String(data[key]);
   }
 }
 
-/**
- * Получает типизированные данные из dataset атрибутов элемента
- */
+// Получение данных из dataset с преобразованием
 export function getElementData<T extends Record<string, unknown>>(
   el: HTMLElement,
   scheme: Record<string, Function>
@@ -115,48 +125,48 @@ export function getElementData<T extends Record<string, unknown>>(
   return data as T;
 }
 
-/**
- * Проверка на простой объект
- */
+// Проверка, является ли объект простым объектом
 export function isPlainObject(obj: unknown): obj is object {
   const prototype = Object.getPrototypeOf(obj);
   return prototype === Object.getPrototypeOf({}) || prototype === null;
 }
 
+// Проверка, является ли значение булевым
 export function isBoolean(v: unknown): v is boolean {
   return typeof v === "boolean";
 }
 
-/**
- * Фабрика DOM-элементов в простейшей реализации
- * здесь не учтено много факторов
- * в интернет можно найти более полные реализации
- */
+// Создание DOM-элемента с свойствами и потомками
 export function createElement<T extends HTMLElement>(
   tagName: keyof HTMLElementTagNameMap,
   props?: Partial<Record<keyof T, string | boolean | object>>,
   children?: HTMLElement | HTMLElement[]
 ): T {
   const element = document.createElement(tagName) as T;
+
   if (props) {
     for (const key in props) {
       const value = props[key];
       if (isPlainObject(value) && key === "dataset") {
         setElementData(element, value);
       } else {
-        // @ts-expect-error fix indexing later
+        // @ts-expect-error
         element[key] = isBoolean(value) ? value : String(value);
       }
     }
   }
+
   if (children) {
-    for (const child of Array.isArray(children) ? children : [children]) {
+    const childrenArray = Array.isArray(children) ? children : [children];
+    for (const child of childrenArray) {
       element.append(child);
     }
   }
+
   return element;
 }
 
+// Проверка, является ли ответ API ошибкой
 export function isErrorApiResponse(e: unknown): e is IErrorApiResponse {
   return typeof e === "object" && e !== null && "error" in e;
 }

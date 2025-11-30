@@ -1,39 +1,47 @@
 import { IProduct } from "../../types";
+import { IEvents } from "../base/Events.ts";
+import { eventNames } from "../../utils/constants.ts";
 
 export class Basket {
-    private items: IProduct[] = [];
+  private items: IProduct[] = [];
 
-    getItems(): IProduct[] {
-        return this.items;
-    }
+  constructor(protected readonly events: IEvents) {}
 
-    addItem(item: IProduct): void {
-        this.items.push(item);
-    }
+  // Получить все товары в корзине
+  getItems(): IProduct[] {
+    return this.items;
+  }
 
-    deleteItem(itemToDelete: IProduct): void {
-        this.items = this.items.filter(({id}) => id !== itemToDelete.id);
-    }
+  // Добавить товар в корзину и вызвать событие
+  addItem(item: IProduct): void {
+    this.items.push(item);
+    this.events.emit(eventNames.BASKET_ADD_ITEM);
+  }
 
-    clear(): void {
-        this.items = [];
-    }
+  // Удалить товар по идентификатору и вызвать событие
+  deleteItem(itemToDelete: IProduct): void {
+    this.items = this.items.filter(({ id }) => id !== itemToDelete.id);
+    this.events.emit(eventNames.BASKET_DELETE_ITEM);
+  }
 
-    getTotalPrice(): number {
-        return this.items.reduce((sum, {price}) => {
-            if (price) {
-                sum += price;
-            }
+  // Очистить корзину и вызвать событие
+  clear(): void {
+    this.items = [];
+    this.events.emit(eventNames.BASKET_CLEAR);
+  }
 
-            return sum;
-        }, 0);
-    }
+  // Рассчитать общую стоимость товаров
+  getTotalPrice(): number {
+    return this.items.reduce((sum, { price }) => sum + (price ?? 0), 0);
+  }
 
-    getTotalItems(): number {
-        return this.items.length;
-    }
+  // Получить количество товаров
+  getTotalItems(): number {
+    return this.items.length;
+  }
 
-    hasItem(itemId: string): boolean {
-        return this.items.some(({id}) => id === itemId);
-    }
+  // Проверить наличие товара по id
+  hasItem(itemId: string): boolean {
+    return this.items.some(({ id }) => id === itemId);
+  }
 }
