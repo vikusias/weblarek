@@ -56,12 +56,8 @@ export class OrderFormView extends FormView<TOrderFormViewData> {
 
   set payment(payment: TPayment) {
     this.paymentBtnElems.forEach((btnElem: HTMLButtonElement) => {
-      btnElem.classList.remove("button_alt-active");
       const btnName = btnElem.name as TPayment;
-
-      if (btnName === payment) {
-        btnElem.classList.add("button_alt-active");
-      }
+      btnElem.classList.toggle("button_alt-active", btnName === payment);
     });
   }
 
