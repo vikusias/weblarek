@@ -1,53 +1,51 @@
-import { categoryMap } from "../utils/constants.ts";
-
-export type ApiPostMethods = "POST" | "PUT" | "DELETE";
-
-export interface IApi {
-  get<T extends object>(uri: string): Promise<T>;
-  post<T extends object>(
-    uri: string,
-    data: object,
-    method?: ApiPostMethods
-  ): Promise<T>;
-}
-
-export type TBuyerValidityMessages = { [k in keyof IBuyer]?: string };
-
-export type TPayment = "card" | "cash" | "";
-
-export interface IBuyer {
-  payment: TPayment;
+export interface IUser {
   address: string;
   phone: string;
+  payment: string | null; // добавляем null
   email: string;
 }
 
-export interface IProduct {
+// Класс UserData с свойством order типа IUser
+export class UserData {
+  order: IUser = {
+    phone: "",
+    address: "",
+    email: "",
+    payment: null,
+  };
+
+  // Можно добавить методы для работы с данными
+  setOrderData(data: Partial<IUser>) {
+    this.order = { ...this.order, ...data };
+  }
+
+  getOrderData(): IUser {
+    return this.order;
+  }
+}
+
+export interface IItem {
   id: string;
+  category: string;
+  title: string;
   description: string;
   image: string;
-  title: string;
-  category: string;
   price: number | null;
 }
 
-export interface IOrderApiRequest extends IBuyer {
+export interface IItemView extends IItem {
+  index: number;
+  itemButton: boolean;
+}
+
+export interface IOrder extends IUser {
   total: number;
   items: string[];
 }
 
-export interface IGetProductsApiResponse {
-  total: number;
-  items: IProduct[];
-}
-
-export interface IErrorApiResponse {
-  error: string;
-}
-
-export interface IOrderApiResponse {
+export interface IOrderResult {
   id: string;
   total: number;
 }
 
-export type TCategoryNames = keyof typeof categoryMap;
+export type FormErrors = Partial<Record<keyof IUser, string>>;

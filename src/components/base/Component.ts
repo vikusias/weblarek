@@ -1,12 +1,37 @@
-/**
- * Базовый компонент
- */
+// Абстрактный класс для компонентов
 export abstract class Component<T> {
-  protected constructor(protected readonly container: HTMLElement) {
-    // Учитывайте что код в конструкторе исполняется до всех объявлений в дочернем классе
+  // Конструктор контейнер HTMLElement
+  protected constructor(protected readonly container: HTMLElement) {}
+
+  toggleClass(element: HTMLElement, className: string, force?: boolean) {
+    element.classList.toggle(className, force);
+  }
+  // Установка текста внутри элемента для обновления
+  protected setText(element: HTMLElement, value: unknown) {
+    if (element) {
+      element.textContent = String(value);
+    }
   }
 
-  // Установить изображение с альтернативным текстом
+  // Метод для управления состоянием элемента включить/отключить (например: кнопку)
+  setDisabled(element: HTMLElement, state: boolean) {
+    if (element) {
+      if (state) element.setAttribute("disabled", "disabled");
+      else element.removeAttribute("disabled");
+    }
+  }
+
+  // Метод скрытия элемента
+  protected setHidden(element: HTMLElement) {
+    element.style.display = "none";
+  }
+
+  // Метод отображения элемента
+  protected setVisible(element: HTMLElement) {
+    element.style.removeProperty("display");
+  }
+
+  // Метод для обновления изображения
   protected setImage(element: HTMLImageElement, src: string, alt?: string) {
     if (element) {
       element.src = src;
@@ -16,7 +41,7 @@ export abstract class Component<T> {
     }
   }
 
-  // Вернуть корневой DOM-элемент
+  // Метод рендеринга компонента; также обновляет его состояние данными
   render(data?: Partial<T>): HTMLElement {
     Object.assign(this as object, data ?? {});
     return this.container;

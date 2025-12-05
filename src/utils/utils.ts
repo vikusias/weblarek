@@ -1,24 +1,23 @@
-import { IErrorApiResponse } from "../types";
-
-// Преобразование строки из PascalCase в kebab-case
+// Преобразует строку из PascalCase в kebab-case 
 export function pascalToKebab(value: string): string {
+  // Исправлена регулярка: символ '0–9' заменен на '0-9' 
   return value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
-// Проверка, является ли значение селектором (строкой)
+// Проверяет, является ли переданный аргумент селектором 
 export function isSelector(x: any): x is string {
   return typeof x === "string" && x.length > 1;
 }
 
-// Проверка, является ли значение пустым
+// Проверяет, является ли значение пустым (null или undefined)
 export function isEmpty(value: any): boolean {
   return value === null || value === undefined;
 }
 
-// Тип для коллекции селекторов
+// Общий тип для коллекции селекторов
 export type SelectorCollection<T> = string | NodeListOf<Element> | T[];
 
-// Получение массива элементов по селектору
+// Получает массив элементов по селектору или коллекции элементов
 export function ensureAllElements<T extends HTMLElement>(
   selectorElement: SelectorCollection<T>,
   context: HTMLElement = document as unknown as HTMLElement
@@ -38,7 +37,7 @@ export function ensureAllElements<T extends HTMLElement>(
 // Тип для элемента или селектора
 export type SelectorElement<T> = T | string;
 
-// Получение одного элемента по селектору
+// Получает один элемент по селектору или возвращает переданный элемент
 export function ensureElement<T extends HTMLElement>(
   selectorElement: SelectorElement<T>,
   context?: HTMLElement
@@ -55,26 +54,29 @@ export function ensureElement<T extends HTMLElement>(
         `selector ${selectorElement} не вернул ни одного элемента`
       );
     }
-    return elements[0];
+    return elements[0]; // или pop(), если нужен последний, обычно - первый
   }
   if (selectorElement instanceof HTMLElement) {
     return selectorElement as T;
   }
-  throw new Error("Неизвестный тип селектора");
+  throw new Error("Неизвестный тип элемента");
 }
 
-// Клонирование шаблона
+// Создает копию шаблона по селектору или HTMLTemplateElement
 export function cloneTemplate<T extends HTMLElement>(
   query: string | HTMLTemplateElement
 ): T {
-  const template = ensureElement(query) as HTMLTemplateElement;
+  const template =
+    typeof query === "string"
+      ? ensureElement<HTMLTemplateElement>(query)
+      : query;
   if (!template.content.firstElementChild) {
-    throw new Error(`Шаблон ${query} не содержит содержимого`);
+    throw new Error("Шаблон пуст");
   }
   return template.content.firstElementChild.cloneNode(true) as T;
 }
 
-// Создание имени и класса по BEM-методу
+// Генерирует имя и класс по BEM-методологии
 export function bem(
   block: string,
   element?: string,
@@ -89,7 +91,7 @@ export function bem(
   };
 }
 
-// Получение свойств объекта, включая свойства прототипа
+// Получает имена свойств прототипа объекта, с возможностью фильтрации
 export function getObjectProperties(
   obj: object,
   filter?: (name: string, prop: PropertyDescriptor) => boolean
@@ -97,38 +99,41 @@ export function getObjectProperties(
   return Object.entries(
     Object.getOwnPropertyDescriptors(Object.getPrototypeOf(obj))
   )
-    .filter(([name, prop]) =>
+    .filter(([name, prop]: [string, PropertyDescriptor]) =>
       filter ? filter(name, prop) : name !== "constructor"
     )
     .map(([name]) => name);
 }
 
-// Установка dataset атрибутов элемента
+// Устанавливает dataset-атрибуты элемента из объекта
 export function setElementData<T extends Record<string, unknown> | object>(
   el: HTMLElement,
   data: T
-): void {
+) {
   for (const key in data) {
     el.dataset[key] = String(data[key]);
   }
 }
 
-// Получение данных из dataset с преобразованием
+// Получает из dataset-атрибутов объекта, применяя схемы преобразования
 export function getElementData<T extends Record<string, unknown>>(
   el: HTMLElement,
   scheme: Record<string, Function>
 ): T {
   const data: Partial<T> = {};
   for (const key in el.dataset) {
-    data[key as keyof T] = scheme[key](el.dataset[key]);
+    if (scheme[key]) {
+      data[key as keyof T] = scheme[key](el.dataset[key]) as T[keyof T];
+    }
   }
   return data as T;
 }
 
-// Проверка, является ли объект простым объектом
+// Проверка, является ли объект простым (обычным) объектом
 export function isPlainObject(obj: unknown): obj is object {
-  const prototype = Object.getPrototypeOf(obj);
-  return prototype === Object.getPrototypeOf({}) || prototype === null;
+  if (obj === null || typeof obj !== "object") return false;
+  const proto = Object.getPrototypeOf(obj);
+  return proto === Object.prototype || proto === null;
 }
 
 // Проверка, является ли значение булевым
@@ -136,7 +141,7 @@ export function isBoolean(v: unknown): v is boolean {
   return typeof v === "boolean";
 }
 
-// Создание DOM-элемента с свойствами и потомками
+// Создает DOM-элемент с заданными свойствами и дочерними элементами
 export function createElement<T extends HTMLElement>(
   tagName: keyof HTMLElementTagNameMap,
   props?: Partial<Record<keyof T, string | boolean | object>>,
@@ -148,25 +153,20 @@ export function createElement<T extends HTMLElement>(
     for (const key in props) {
       const value = props[key];
       if (isPlainObject(value) && key === "dataset") {
+        // Установка dataset отдельно
         setElementData(element, value);
       } else {
-        // @ts-expect-error
-        element[key] = isBoolean(value) ? value : String(value);
+        // Назначение свойств элемента
+        (element as any)[key] = isBoolean(value) ? value : String(value);
       }
     }
   }
 
   if (children) {
-    const childrenArray = Array.isArray(children) ? children : [children];
-    for (const child of childrenArray) {
+    for (const child of Array.isArray(children) ? children : [children]) {
       element.append(child);
     }
   }
 
   return element;
-}
-
-// Проверка, является ли ответ API ошибкой
-export function isErrorApiResponse(e: unknown): e is IErrorApiResponse {
-  return typeof e === "object" && e !== null && "error" in e;
 }

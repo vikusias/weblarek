@@ -306,7 +306,7 @@ return this.api.submitOrder(data);
 }
 }
 
-##Представления (Views)
+## Представления (Views)
 
 Все компоненты UI наследуются от базового класса Component.
 
