@@ -1,23 +1,20 @@
-// Преобразует строку из PascalCase в kebab-case 
+import { IErrorApiResponse } from "../types";
+
+// Конвертация camelCase/PascalCase в kebab-case
 export function pascalToKebab(value: string): string {
-  // Исправлена регулярка: символ '0–9' заменен на '0-9' 
   return value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
-
-// Проверяет, является ли переданный аргумент селектором 
+// Проверка селектора
 export function isSelector(x: any): x is string {
   return typeof x === "string" && x.length > 1;
 }
 
-// Проверяет, является ли значение пустым (null или undefined)
 export function isEmpty(value: any): boolean {
   return value === null || value === undefined;
 }
 
-// Общий тип для коллекции селекторов
 export type SelectorCollection<T> = string | NodeListOf<Element> | T[];
 
-// Получает массив элементов по селектору или коллекции элементов
 export function ensureAllElements<T extends HTMLElement>(
   selectorElement: SelectorCollection<T>,
   context: HTMLElement = document as unknown as HTMLElement
@@ -25,73 +22,75 @@ export function ensureAllElements<T extends HTMLElement>(
   if (isSelector(selectorElement)) {
     return Array.from(context.querySelectorAll(selectorElement)) as T[];
   }
+
   if (selectorElement instanceof NodeList) {
     return Array.from(selectorElement) as T[];
   }
+
   if (Array.isArray(selectorElement)) {
     return selectorElement;
   }
+
   throw new Error(`Unknown selector element`);
 }
 
-// Тип для элемента или селектора
 export type SelectorElement<T> = T | string;
 
-// Получает один элемент по селектору или возвращает переданный элемент
+// Безопасное получение элемента с обработкой ошибок
 export function ensureElement<T extends HTMLElement>(
   selectorElement: SelectorElement<T>,
   context?: HTMLElement
 ): T {
   if (isSelector(selectorElement)) {
     const elements = ensureAllElements<T>(selectorElement, context);
+
     if (elements.length > 1) {
-      console.warn(
-        `selector ${selectorElement} возвращает более одного элемента`
-      );
+      console.warn(`selector ${selectorElement} return more then one element`);
     }
+
     if (elements.length === 0) {
-      throw new Error(
-        `selector ${selectorElement} не вернул ни одного элемента`
-      );
+      throw new Error(`selector ${selectorElement} return nothing`);
     }
-    return elements[0]; // или pop(), если нужен последний, обычно - первый
+
+    return elements.pop() as T;
   }
+
   if (selectorElement instanceof HTMLElement) {
     return selectorElement as T;
   }
-  throw new Error("Неизвестный тип элемента");
+
+  throw new Error("Unknown selector element");
 }
 
-// Создает копию шаблона по селектору или HTMLTemplateElement
+// Клонирование шаблона из HTML
 export function cloneTemplate<T extends HTMLElement>(
   query: string | HTMLTemplateElement
 ): T {
-  const template =
-    typeof query === "string"
-      ? ensureElement<HTMLTemplateElement>(query)
-      : query;
+  const template = ensureElement(query) as HTMLTemplateElement;
+
   if (!template.content.firstElementChild) {
-    throw new Error("Шаблон пуст");
+    throw new Error(`Template ${query} has no content`);
   }
+
   return template.content.firstElementChild.cloneNode(true) as T;
 }
 
-// Генерирует имя и класс по BEM-методологии
 export function bem(
   block: string,
   element?: string,
   modifier?: string
 ): { name: string; class: string } {
   let name = block;
+
   if (element) name += `__${element}`;
   if (modifier) name += `_${modifier}`;
+
   return {
     name,
     class: `.${name}`,
   };
 }
 
-// Получает имена свойств прототипа объекта, с возможностью фильтрации
 export function getObjectProperties(
   obj: object,
   filter?: (name: string, prop: PropertyDescriptor) => boolean
@@ -105,7 +104,6 @@ export function getObjectProperties(
     .map(([name]) => name);
 }
 
-// Устанавливает dataset-атрибуты элемента из объекта
 export function setElementData<T extends Record<string, unknown> | object>(
   el: HTMLElement,
   data: T
@@ -115,33 +113,28 @@ export function setElementData<T extends Record<string, unknown> | object>(
   }
 }
 
-// Получает из dataset-атрибутов объекта, применяя схемы преобразования
 export function getElementData<T extends Record<string, unknown>>(
   el: HTMLElement,
   scheme: Record<string, Function>
 ): T {
   const data: Partial<T> = {};
+
   for (const key in el.dataset) {
-    if (scheme[key]) {
-      data[key as keyof T] = scheme[key](el.dataset[key]) as T[keyof T];
-    }
+    data[key as keyof T] = scheme[key](el.dataset[key]);
   }
+
   return data as T;
 }
 
-// Проверка, является ли объект простым (обычным) объектом
 export function isPlainObject(obj: unknown): obj is object {
-  if (obj === null || typeof obj !== "object") return false;
-  const proto = Object.getPrototypeOf(obj);
-  return proto === Object.prototype || proto === null;
+  const prototype = Object.getPrototypeOf(obj);
+  return prototype === Object.getPrototypeOf({}) || prototype === null;
 }
 
-// Проверка, является ли значение булевым
 export function isBoolean(v: unknown): v is boolean {
   return typeof v === "boolean";
 }
 
-// Создает DOM-элемент с заданными свойствами и дочерними элементами
 export function createElement<T extends HTMLElement>(
   tagName: keyof HTMLElementTagNameMap,
   props?: Partial<Record<keyof T, string | boolean | object>>,
@@ -152,12 +145,12 @@ export function createElement<T extends HTMLElement>(
   if (props) {
     for (const key in props) {
       const value = props[key];
+
       if (isPlainObject(value) && key === "dataset") {
-        // Установка dataset отдельно
         setElementData(element, value);
       } else {
-        // Назначение свойств элемента
-        (element as any)[key] = isBoolean(value) ? value : String(value);
+        // @ts-expect-error fix indexing later
+        element[key] = isBoolean(value) ? value : String(value);
       }
     }
   }
@@ -169,4 +162,35 @@ export function createElement<T extends HTMLElement>(
   }
 
   return element;
+}
+
+export function isErrorApiResponse(e: unknown): e is IErrorApiResponse {
+  return typeof e === "object" && e !== null && "error" in e;
+}
+
+// Валидация email
+export function validateEmail(email: string): boolean {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+// Валидация телефона (базовая)
+export function validatePhone(phone: string): boolean {
+  const re = /^\+?[\d\s\-()]{10,}$/;
+  return re.test(phone);
+}
+
+export function formatPrice(price: number | null): string {
+  if (price === null) return "Бесценно";
+  return `${price.toLocaleString("ru-RU")} синапсов`;
+}
+// Debounce для оптимизации частых вызовов
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: number;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = window.setTimeout(() => func(...args), wait);
+  };
 }
