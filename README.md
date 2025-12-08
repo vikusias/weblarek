@@ -130,7 +130,7 @@ interface IBuyer {
   payment: TPayment;    // Способ оплаты: 'online' | 'cash'
   address: string;      // Адрес доставки
   email: string;        // Электронная почта
-  phone: string;        // Телефон (формат: +7 XXX XXX-XX-XX)
+  phone: string;        // Телефон
 }
 ```
 
@@ -574,7 +574,7 @@ constructor(container: HTMLElement, events: IEvents)
 App
 ```
 
-— Главный координатор приложения:
+- Главный координатор приложения:
 
 - Обрабатывает события от View
 
@@ -596,20 +596,20 @@ class App {
   private header: HeaderView;
   private gallery: GalleryView;
 
-  Валидаторы форм
+    Валидаторы форм
   private formValidators: {
     order: boolean;
     contacts: boolean;
   };
 
   constructor(private events: IEvents, private api: ProductApi) {
-    // Инициализация компонентов
+    Инициализация компонентов
     this.initViews();
     this.setupEventListeners();
     this.loadProducts();
   }
 
-   Основные методы:
+    Основные методы:
   private initViews(): void              // Инициализация представлений
   private setupEventListeners(): void    // Настройка обработчиков событий
   private loadProducts(): void           // Загрузка товаров с сервера
