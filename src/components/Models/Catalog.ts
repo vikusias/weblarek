@@ -1,9 +1,14 @@
 import { IProduct } from "../../types";
 import { IEvents } from "../base/Events";
 
-export class Catalog {
+export interface ICatalog {
+  getItems(): IProduct[];
+  getItem(id: string): IProduct | undefined;
+  setItems(items: IProduct[]): void;
+}
+
+export class Catalog implements ICatalog {
   private items: IProduct[] = [];
-  private currentItem: IProduct | null = null;
 
   constructor(private events: IEvents) {}
 
@@ -16,22 +21,7 @@ export class Catalog {
     return [...this.items];
   }
 
-  getItem(itemId: string): IProduct | null {
-    return this.items.find(({ id }) => id === itemId) ?? null;
-  }
-
-  setCurrentItem(item: IProduct | null): void {
-    this.currentItem = item;
-    if (item) {
-      this.events.emit("product:selected", { item: this.currentItem });
-    }
-  }
-
-  getCurrentItem(): IProduct | null {
-    return this.currentItem;
-  }
-
-  clearCurrentItem(): void {
-    this.currentItem = null;
+  getItem(itemId: string): IProduct | undefined {
+    return this.items.find(({ id }) => id === itemId);
   }
 }
