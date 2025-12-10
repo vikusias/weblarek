@@ -4,6 +4,7 @@ import { Component } from "../base/Component";
 interface IGalleryData {
   items: HTMLElement[]; // Массив элементов галереи
 }
+
 // Вью для галереи
 export class GalleryView extends Component<IGalleryData> {
   constructor(container: HTMLElement) {
@@ -12,6 +13,6 @@ export class GalleryView extends Component<IGalleryData> {
 
   // Установка элементов галереи
   set items(items: HTMLElement[]) {
-    this.element.replaceChildren(...items);
+    this.container.replaceChildren(...items); // this.container вместо this.element
   }
 }
