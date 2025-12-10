@@ -63,3 +63,30 @@ export interface IFormViewActions {
   onSubmit: (data: object) => void;
   onChange?: (field: string, value: string) => void;
 }
+
+// Интерфейсы для моделей
+export interface ICatalog {
+  getItems(): IProduct[];
+  getItem(id: string): IProduct | undefined;
+  setItems(items: IProduct[]): void;
+}
+
+export interface IBasket {
+  addItem(item: IProduct): void;
+  removeItem(id: string): void;
+  clear(): void;
+  getItems(): IProduct[];
+  getTotalPrice(): number;
+  getTotalItems(): number;
+  hasItem(id: string): boolean;
+}
+
+export interface ICustomer {
+  setPayment(payment: TPayment): void;
+  setAddress(address: string): void;
+  setEmail(email: string): void;
+  setPhone(phone: string): void;
+  clear(): void;
+  getData(): IBuyer;
+  checkValidity(): TBuyerValidityMessages;
+}
