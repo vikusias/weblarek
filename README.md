@@ -130,7 +130,7 @@ interface IBuyer {
   payment: TPayment;    // Способ оплаты: 'online' | 'cash'
   address: string;      // Адрес доставки
   email: string;        // Электронная почта
-  phone: string;        // Телефон
+  phone: string;        // Телефон (формат: +7 XXX XXX-XX-XX)
 }
 ```
 
@@ -540,6 +540,32 @@ constructor(container: HTMLElement, events: IEvents)
 
 ```
 
+FormView
+
+Базовый класс для всех форм
+
+```
+
+Ключевые особенности:
+
+
+- Абстрактный класс - нельзя создать экземпляр напрямую
+
+- Общий функционал для всех форм:
+
+- Находит кнопку отправки и элемент для ошибок
+
+- Обрабатывает событие submit
+
+- Управляет состоянием кнопки (активна/неактивна)
+
+- Отображает ошибки валидации
+
+- Абстрактный метод handleSubmit() - каждая конкретная форма реализует свою логику отправки
+
+
+```
+
 OrderSuccessView
 
 Назначение: отображение подтверждения заказа.
@@ -574,7 +600,7 @@ constructor(container: HTMLElement, events: IEvents)
 App
 ```
 
-- Главный координатор приложения:
+— Главный координатор приложения:
 
 - Обрабатывает события от View
 
@@ -596,20 +622,20 @@ class App {
   private header: HeaderView;
   private gallery: GalleryView;
 
-    Валидаторы форм
+  Валидаторы форм
   private formValidators: {
     order: boolean;
     contacts: boolean;
   };
 
   constructor(private events: IEvents, private api: ProductApi) {
-    Инициализация компонентов
+    // Инициализация компонентов
     this.initViews();
     this.setupEventListeners();
     this.loadProducts();
   }
 
-    Основные методы:
+   Основные методы:
   private initViews(): void              // Инициализация представлений
   private setupEventListeners(): void    // Настройка обработчиков событий
   private loadProducts(): void           // Загрузка товаров с сервера
