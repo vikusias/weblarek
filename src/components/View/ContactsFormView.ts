@@ -1,40 +1,74 @@
-import { Component } from "../base/Component";
+import { FormView } from "./FormView";
 import { IEvents } from "../base/Events";
 import { IBuyer } from "../../types";
-import { validateEmail, validatePhone } from "../../utils/utils";
 
 interface IContactsFormData extends Partial<IBuyer> {
   valid: boolean;
   errors: string[];
 }
 
-export class ContactsFormView extends Component<IContactsFormData> {
-  protected _email: HTMLInputElement;
-  protected _phone: HTMLInputElement;
-  protected _submit: HTMLButtonElement;
-  protected _errors: HTMLElement;
-  private _emailTimeout: number | null = null;
-  private _phoneTimeout: number | null = null;
+export class ContactsFormView extends FormView<IContactsFormData> {
+  protected emailInput: HTMLInputElement;
+  protected phoneInput: HTMLInputElement;
 
   constructor(container: HTMLElement, events: IEvents) {
-    super(container);
+    super(container, events);
 
-    this._email = this.element.querySelector('input[name="email"]')!;
-    this._phone = this.element.querySelector('input[name="phone"]')!;
-    this._submit = this.element.querySelector('button[type="submit"]')!;
-    this._errors = this.element.querySelector(".form__errors")!;
+    this.emailInput = this.container.querySelector('input[name="email"]')!;
+    this.phoneInput = this.container.querySelector('input[name="phone"]')!;
 
-    // Обработка ввода данных с debounce
-    this._email.addEventListener("input", () => {
-      if (this._emailTimeout) clearTimeout(this._emailTimeout);
-
-      this._emailTimeout = window.setTimeout(() => {
-        events.emit("contacts.email:change", {
-          email: this._email.value,
-        });
-        this.validateForm();
-      }, 300);
+    // Обработка ввода данных
+    this.emailInput.addEventListener("input", () => {
+      events.emit("contacts.email:change", {
+        email: this.emailInput.value,
+      });
     });
+
+    this.phoneInput.addEventListener("input", () => {
+      events.emit("contacts.phone:change", {
+        phone: this.phoneInput.value,
+      });
+    });
+  }
+
+  protected handleSubmit(): void {
+    this.events.emit("contacts:submit", {
+      email: this.emailInput.value,
+      phone: this.phoneInput.value,
+    });
+  }
+
+  // Сеттеры для обновления формы из презентера
+  set email(value: string) {
+    this.emailInput.value = value;
+  }
+
+  set phone(value: string) {
+    this.phoneInput.value = value;
+  }
+
+  render(data: Partial<IContactsFormData>): HTMLElement {
+    super.render(data);
+
+    if (data.email !== undefined) {
+      this.email = data.email;
+    }
+
+    if (data.phone !== undefined) {
+      this.phone = data.phone;
+    }
+
+    if (data.valid !== undefined) {
+      this.valid = data.valid;
+    }
+
+    if (data.errors) {
+      this.errors = data.errors;
+    }
+
+    return this.container;
+  }
+}
 
     this._phone.addEventListener("input", () => {
       if (this._phoneTimeout) clearTimeout(this._phoneTimeout);
