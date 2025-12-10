@@ -400,11 +400,10 @@ CardCatalogView
 
 Конструктор:
 
+```
 constructor(container: HTMLElement, actions?: ICardActions)
-
 ```
 
-```
 
 Свойства:
 
