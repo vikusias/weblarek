@@ -1,36 +1,54 @@
 import { CardView } from "./CardView";
 import { IProduct, ICardActions } from "../../types";
-// Вью карточки каталога
+import { categoryMap } from "../../utils/constants";
+
 export class CardCatalogView extends CardView<IProduct> {
+  private categoryElement: HTMLElement | null = null;
+  private imageElement: HTMLImageElement | null = null;
+
   constructor(container: HTMLElement, actions?: ICardActions) {
     super(container);
 
-    const button = this.element as HTMLButtonElement;
+    // Находим элементы, специфичные для карточки каталога
+    this.categoryElement = this.container.querySelector(".card__category");
+    this.imageElement = this.container.querySelector(".card__image");
+
     // Обработка клика по карточке
     if (actions?.onClick) {
-      button.addEventListener("click", actions.onClick);
+      this.container.addEventListener("click", actions.onClick);
     }
   }
 
-  // Установка id карточки
-  set id(value: string) {
-    this.element.dataset.id = value;
+  // Установка категории (только для каталога)
+  set category(value: string) {
+    if (this.categoryElement) {
+      this.setText(this.categoryElement, value);
+
+      // Устанавливаем класс для цвета категории
+      const categoryKey = value as keyof typeof categoryMap;
+      const className = categoryMap[categoryKey] || "card__category_other";
+      this.categoryElement.className = `card__category ${className}`;
+    }
   }
-  // Получение id карточки
-  get id(): string {
-    return this.element.dataset.id || "";
+
+  // Установка изображения (только для каталога)
+  set image(value: string) {
+    if (this.imageElement) {
+      this.setImage(this.imageElement, value, "Изображение товара");
+    }
   }
-  // Рендеринг карточки
+
   render(data: Partial<IProduct>): HTMLElement {
     super.render(data);
 
-    if (data.price === null) {
-      this.buttonText = "Недоступно";
-      this.buttonDisabled = true;
-    } else {
-      this.buttonDisabled = false;
+    if (data.category && this.categoryElement) {
+      this.category = data.category;
     }
 
-    return this.element;
+    if (data.image && this.imageElement) {
+      this.image = data.image;
+    }
+
+    return this.container;
   }
 }
