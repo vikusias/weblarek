@@ -1,17 +1,19 @@
-/** 
-
- * Базовый компонент 
-
+/**
+ * Базовый компонент
  */
-
 export abstract class Component<T> {
   protected constructor(protected readonly container: HTMLElement) {}
 
-  get element(): HTMLElement {
+  // Метод для получения DOM-элемента (не данных!)
+  getDOMElement(): HTMLElement {
     return this.container;
   }
 
-  protected setImage(element: HTMLImageElement, src: string, alt?: string) {
+  protected setImage(
+    element: HTMLImageElement,
+    src: string,
+    alt?: string
+  ): void {
     if (element) {
       element.src = src;
       if (alt) {
@@ -20,54 +22,36 @@ export abstract class Component<T> {
     }
   }
 
-  protected setText(element: HTMLElement, text: string | number) {
+  protected setText(element: HTMLElement, text: string | number): void {
     if (element) {
       element.textContent = String(text);
     }
   }
 
-  protected setDisabled(element: HTMLElement, state: boolean) {
+  protected setDisabled(element: HTMLElement, state: boolean): void {
     if (element) {
-      if (state) element.setAttribute("disabled", "disabled");
-      else element.removeAttribute("disabled");
+      if (state) {
+        element.setAttribute("disabled", "disabled");
+      } else {
+        element.removeAttribute("disabled");
+      }
     }
-  }
-
-  protected setHidden(element: HTMLElement) {
-    element.style.display = "none";
-  }
-
-  protected setVisible(element: HTMLElement) {
-    element.style.removeProperty("display");
-  }
-
-  protected isLocked(element: HTMLElement): boolean {
-    return element.hasAttribute("disabled");
-  }
-
-  protected addClass(element: HTMLElement, className: string) {
-    element.classList.add(className);
-  }
-
-  protected removeClass(element: HTMLElement, className: string) {
-    element.classList.remove(className);
   }
 
   protected toggleClass(
     element: HTMLElement,
     className: string,
-    state: boolean
-  ) {
-    if (state) {
-      this.addClass(element, className);
+    state?: boolean
+  ): void {
+    if (state === undefined) {
+      element.classList.toggle(className);
     } else {
-      this.removeClass(element, className);
+      element.classList.toggle(className, state);
     }
   }
 
-  // Шаблонный метод рендеринга - присваивает данные и возвращает элемент
   render(data?: Partial<T>): HTMLElement {
-    Object.assign(this as object, data ?? {}); // Копирование данных в свойства компонента
-    return this.element;
+    Object.assign(this as object, data ?? {});
+    return this.container;
   }
 }
