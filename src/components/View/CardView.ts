@@ -1,68 +1,28 @@
 import { Component } from "../base/Component";
-import { IProduct, TCategoryNames } from "../../types";
-import { categoryMap } from "../../utils/constants";
 
-// Тип ключа категории
-export type CategoryKey = keyof typeof categoryMap;
-
-// Абстрактный класс карточки товара
 export abstract class CardView<T> extends Component<T> {
-  protected _title: HTMLElement;
-  protected _price: HTMLElement;
-  protected _category: HTMLElement | null = null;
-  protected _image: HTMLImageElement | null = null;
-  protected _button: HTMLButtonElement | null = null;
+  protected titleElement: HTMLElement;
+  protected priceElement: HTMLElement;
 
   constructor(container: HTMLElement) {
     super(container);
-    // Находим элементы внутри карточки
-    this._title = this.element.querySelector(".card__title")!;
-    this._price = this.element.querySelector(".card__price")!;
-    this._category = this.element.querySelector(".card__category");
-    this._image = this.element.querySelector(".card__image");
-    this._button = this.element.querySelector(".button");
+
+    // Находим только общие элементы, которые есть во всех карточках
+    this.titleElement = this.container.querySelector(".card__title")!;
+    this.priceElement = this.container.querySelector(".card__price")!;
   }
-  // Установка заголовка
+
+  // Установка заголовка (общий для всех карточек)
   set title(value: string) {
-    this.setText(this._title, value);
+    this.setText(this.titleElement, value);
   }
 
-  // Установка цены
+  // Установка цены (общий для всех карточек)
   set price(value: number | null) {
-    if (value === null || value === undefined) {
-      this.setText(this._price, "Бесценно");
+    if (value === null) {
+      this.setText(this.priceElement, "Бесценно");
     } else {
-      this.setText(this._price, `${value} синапсов`);
-    }
-  }
-
-  // Установка категории
-  set category(value: TCategoryNames) {
-    if (this._category) {
-      this.setText(this._category, value);
-      this._category.className =
-        "card__category " + (categoryMap[value] || "card__category_other");
-    }
-  }
-  // Установка изображения
-  set image(value: string) {
-    if (this._image) {
-      this.setImage(this._image, value, "Изображение товара");
-    }
-  }
-  // Установка текста кнопки
-  set buttonText(value: string) {
-    if (this._button) {
-      this.setText(this._button, value);
-    }
-  }
-  // Отключение/включение кнопки
-  set buttonDisabled(value: boolean) {
-    if (this._button) {
-      this.setDisabled(this._button, value);
+      this.setText(this.priceElement, `${value} синапсов`);
     }
   }
 }
-
-// Экспорт типа IProduct
-export type { IProduct };
