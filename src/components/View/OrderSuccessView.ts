@@ -7,26 +7,26 @@ interface IOrderSuccessData {
 }
 
 export class OrderSuccessView extends Component<IOrderSuccessData> {
-  protected _description: HTMLElement; // Элемент для отображения суммы
-  protected _closeButton: HTMLButtonElement; // Кнопка закрытия окна
+  protected description: HTMLElement; // Элемент для отображения суммы
+  protected closeButton: HTMLButtonElement; // Кнопка закрытия окна
 
   constructor(container: HTMLElement, events: IEvents) {
     super(container);
 
     // Находим элементы в DOM
-    this._description = this.element.querySelector(
+    this.description = this.container.querySelector(
       ".order-success__description"
     )!;
-    this._closeButton = this.element.querySelector(".order-success__close")!;
+    this.closeButton = this.container.querySelector(".order-success__close")!;
 
     // Обработка клика по кнопке закрытия
-    this._closeButton.addEventListener("click", () => {
+    this.closeButton.addEventListener("click", () => {
       events.emit("order:success");
     });
   }
 
   // Установка текста суммы
   set total(value: number) {
-    this.setText(this._description, `Списано ${value} синапсов`);
+    this.setText(this.description, `Списано ${value} синапсов`);
   }
 }
