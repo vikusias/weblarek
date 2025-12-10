@@ -1,41 +1,50 @@
 import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";
 
-// Интерфейс данных корзины
 interface IBasketData {
-  items: HTMLElement[]; // элементы товаров
-  total: number; // сумма
-  canCheckout: boolean; // возможность оформить заказ
+  items: HTMLElement[];
+  total: number;
+  canCheckout: boolean;
 }
 
 export class BasketView extends Component<IBasketData> {
-  protected _list: HTMLElement; // список товаров
-  protected _total: HTMLElement; // отображение суммы
-  protected _button: HTMLButtonElement; // кнопка оформить заказ
+  protected listElement: HTMLElement;
+  protected totalElement: HTMLElement;
+  protected buttonElement: HTMLButtonElement;
 
   constructor(container: HTMLElement, events: IEvents) {
     super(container);
 
-    this._list = this.element.querySelector(".basket__list")!;
-    this._total = this.element.querySelector(".basket__price")!;
-    this._button = this.element.querySelector(".basket__button")!;
+    this.listElement = this.container.querySelector(".basket__list")!;
+    this.totalElement = this.container.querySelector(".basket__price")!;
+    this.buttonElement = this.container.querySelector(".basket__button")!;
 
-    this._button.addEventListener("click", () => {
+    // Обработка клика на кнопку оформления заказа
+    this.buttonElement.addEventListener("click", () => {
       events.emit("order:start");
     });
   }
-  // Установка элементов товаров
+
+  // Сеттер для элементов товаров
   set items(items: HTMLElement[]) {
-    this._list.innerHTML = "";
-    if (items.length) {
-      this._list.append(...items);
-    } else {
-      const emptyMessage = document.createElement("p");
-      emptyMessage.className = "basket__empty";
-      emptyMessage.textContent = "Корзина пуста";
-      this._list.appendChild(emptyMessage);
+    this.listElement.innerHTML = "";
+
+    if (items.length > 0) {
+      this.listElement.append(...items);
     }
+    // Если товаров нет, просто оставляем список пустым
   }
+
+  // Сеттер для общей суммы
+  set total(value: number) {
+    this.setText(this.totalElement, `${value} синапсов`);
+  }
+
+  // Сеттер для кнопки оформления
+  set canCheckout(value: boolean) {
+    this.setDisabled(this.buttonElement, !value);
+  }
+}
   // Установка общей суммы
   set total(value: number) {
     this.setText(this._total, `${value} синапсов`);
