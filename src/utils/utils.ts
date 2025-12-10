@@ -194,3 +194,8 @@ export function debounce<T extends (...args: any[]) => any>(
     timeout = window.setTimeout(() => func(...args), wait);
   };
 }
+
+// Хелпер для фильтрации ошибок
+export function filterErrors(errors: (string | undefined)[]): string[] {
+  return errors.filter((error): error is string => Boolean(error));
+}
