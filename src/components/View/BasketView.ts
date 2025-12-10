@@ -1,85 +1,47 @@
+import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";
-import { IBuyer, TBuyerValidityMessages, TPayment } from "../../types";
-import { validateEmail, validatePhone } from "../../utils/utils";
 
-export interface ICustomer {
-  setPayment(payment: TPayment): void;
-  setAddress(address: string): void;
-  setEmail(email: string): void;
-  setPhone(phone: string): void;
-  clear(): void;
-  getData(): IBuyer;
-  checkValidity(): TBuyerValidityMessages;
+interface IBasketData {
+  items: HTMLElement[];
+  total: number;
+  canCheckout: boolean;
 }
 
-export class Customer implements ICustomer {
-  private payment: TPayment = "";
-  private address: string = "";
-  private phone: string = "";
-  private email: string = "";
+export class BasketView extends Component<IBasketData> {
+  protected listElement: HTMLElement;
+  protected totalElement: HTMLElement;
+  protected buttonElement: HTMLButtonElement;
 
-  constructor(private events: IEvents) {}
+  constructor(container: HTMLElement, events: IEvents) {
+    super(container);
 
-  setPayment(payment: TPayment): void {
-    this.payment = payment;
-    this.events.emit("customer:changed");
+    this.listElement = this.container.querySelector(".basket__list")!;
+    this.totalElement = this.container.querySelector(".basket__price")!;
+    this.buttonElement = this.container.querySelector(".basket__button")!;
+
+    // Обработка клика на кнопку оформления заказа
+    this.buttonElement.addEventListener("click", () => {
+      events.emit("order:start");
+    });
   }
 
-  setAddress(address: string): void {
-    this.address = address;
-    this.events.emit("customer:changed");
-  }
+  // Сеттер для элементов товаров
+  set items(items: HTMLElement[]) {
+    this.listElement.innerHTML = "";
 
-  setPhone(phone: string): void {
-    this.phone = phone;
-    this.events.emit("customer:changed");
-  }
-
-  setEmail(email: string): void {
-    this.email = email;
-    this.events.emit("customer:changed");
-  }
-
-  getData(): IBuyer {
-    return {
-      payment: this.payment,
-      address: this.address,
-      phone: this.phone,
-      email: this.email,
-    };
-  }
-
-  checkValidity(): TBuyerValidityMessages {
-    const errors: TBuyerValidityMessages = {};
-
-    if (!this.payment) {
-      errors.payment = "Выберите способ оплаты";
+    if (items.length > 0) {
+      this.listElement.append(...items);
     }
-
-    if (!this.address.trim()) {
-      errors.address = "Необходимо указать адрес";
-    }
-
-    if (!this.phone.trim()) {
-      errors.phone = "Необходимо указать номер телефона";
-    } else if (!validatePhone(this.phone)) {
-      errors.phone = "Неверный формат телефона";
-    }
-
-    if (!this.email.trim()) {
-      errors.email = "Необходимо указать email";
-    } else if (!validateEmail(this.email)) {
-      errors.email = "Неверный формат email";
-    }
-
-    return errors;
+    // Если товаров нет, просто оставляем список пустым
   }
 
-  clear(): void {
-    this.payment = "";
-    this.address = "";
-    this.phone = "";
-    this.email = "";
-    this.events.emit("customer:changed");
+  // Сеттер для общей суммы
+  set total(value: number) {
+    this.setText(this.totalElement, `${value} синапсов`);
+  }
+
+  // Сеттер для кнопки оформления
+  set canCheckout(value: boolean) {
+    this.setDisabled(this.buttonElement, !value);
   }
 }
