@@ -45,28 +45,3 @@ export class BasketView extends Component<IBasketData> {
     this.setDisabled(this.buttonElement, !value);
   }
 }
-  // Установка общей суммы
-  set total(value: number) {
-    this.setText(this._total, `${value} синапсов`);
-  }
-  // Разблокировка/блокировка кнопки оформления заказа
-  set canCheckout(value: boolean) {
-    this.setDisabled(this._button, !value);
-  }
-  // Обновление данных корзины
-  render(data: Partial<IBasketData>): HTMLElement {
-    if (data.items) {
-      this.items = data.items;
-    }
-
-    if (data.total !== undefined) {
-      this.total = data.total;
-    }
-
-    if (data.canCheckout !== undefined) {
-      this.canCheckout = data.canCheckout;
-    }
-
-    return this.element;
-  }
-}
