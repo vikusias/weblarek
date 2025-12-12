@@ -4,7 +4,6 @@ import { IEvents } from "../base/Events";
 export class ModalView extends Component<{ content: HTMLElement }> {
   protected closeButton: HTMLButtonElement;
   protected contentElement: HTMLElement;
-  private _isOpen: boolean = false;
 
   constructor(container: HTMLElement, protected events: IEvents) {
     super(container);
@@ -22,26 +21,17 @@ export class ModalView extends Component<{ content: HTMLElement }> {
     });
   }
 
-  get isOpen(): boolean {
-    return this._isOpen;
-  }
-
   set content(value: HTMLElement) {
     this.contentElement.innerHTML = "";
     this.contentElement.appendChild(value);
   }
 
   open(): void {
-    this._isOpen = true;
     this.container.classList.add("modal_active");
-    document.body.classList.add("modal-open");
   }
 
   close(): void {
-    this._isOpen = false;
     this.container.classList.remove("modal_active");
-    document.body.classList.remove("modal-open");
     this.events.emit("modal:close");
   }
 }
-

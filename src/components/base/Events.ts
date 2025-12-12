@@ -40,7 +40,7 @@ export class EventEmitter implements IEvents {
 
   emit<T extends object>(eventName: string, data?: T) {
     this._events.forEach((subscribers, name) => {
-       // Обработка специального события "*" (все события)
+      // Обработка специального события "*" (все события)
       if (name === "*") {
         subscribers.forEach((callback) =>
           callback({
@@ -49,7 +49,7 @@ export class EventEmitter implements IEvents {
           })
         );
       }
-       // Проверка на совпадение
+      // Проверка на совпадение
       if (
         (name instanceof RegExp && name.test(eventName)) ||
         name === eventName

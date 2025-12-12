@@ -1,7 +1,12 @@
 import { CardView } from "./CardView";
 import { IProduct, ICardActions } from "../../types";
 
-export class CardBasketView extends CardView<IProduct> {
+// Расширяем интерфейс для корзины
+interface ICardBasketData extends Partial<IProduct> {
+  index?: number;
+}
+
+export class CardBasketView extends CardView<ICardBasketData> {
   private indexElement: HTMLElement | null = null;
   private deleteButton: HTMLButtonElement | null = null;
 
@@ -23,15 +28,5 @@ export class CardBasketView extends CardView<IProduct> {
     if (this.indexElement) {
       this.setText(this.indexElement, String(value));
     }
-  }
-
-  render(data: Partial<IProduct> & { index?: number }): HTMLElement {
-    super.render(data);
-
-    if (data.index !== undefined && this.indexElement) {
-      this.index = data.index;
-    }
-
-    return this.container;
   }
 }

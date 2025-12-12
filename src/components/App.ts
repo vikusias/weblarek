@@ -1,5 +1,4 @@
 import { IEvents } from "./base/Events";
-import { ProductApi } from "./ProductApi";
 import { ModalView } from "./View/ModalView";
 import { CardCatalogView } from "./View/CardCatalogView";
 import { CardPreviewView } from "./View/CardPreviewView";
@@ -10,70 +9,60 @@ import { ContactsFormView } from "./View/ContactsFormView";
 import { OrderSuccessView } from "./View/OrderSuccessView";
 import { HeaderView } from "./View/HeaderView";
 import { GalleryView } from "./View/GalleryView";
-import { cloneTemplate, ensureElement } from "../utils/utils";
+import { cloneTemplate } from "../utils/utils";
 import { IProduct, IOrderApiRequest, TPayment, TCategoryNames } from "../types";
 import { CDN_URL } from "../utils/constants";
-import { ICatalog } from "./Models/Catalog";
-import { IBasket } from "./Models/Basket";
-import { ICustomer } from "./Models/Customer";
+
+// Интерфейсы для инверсии зависимостей
+interface IProductApi {
+  getProducts(): Promise<{ items: IProduct[] }>;
+  order(data: IOrderApiRequest): Promise<{ id: string }>;
+}
+
+interface IAppViews {
+  modal: ModalView;
+  header: HeaderView;
+  gallery: GalleryView;
+  basketView: BasketView;
+  orderFormView: OrderFormView;
+  contactsFormView: ContactsFormView;
+  orderSuccessView: OrderSuccessView;
+}
 
 export class App {
-  private modal: ModalView;
-  private header: HeaderView;
-  private gallery: GalleryView;
-  private basketView: BasketView;
-  private orderFormView: OrderFormView;
-  private contactsFormView: ContactsFormView;
-  private orderSuccessView: OrderSuccessView;
-
-  private currentModalType:
-    | "order"
-    | "contacts"
-    | "basket"
-    | "product"
-    | "success"
-    | null = null;
-
   constructor(
     private events: IEvents,
-    private api: ProductApi,
-    private catalog: ICatalog,
-    private basket: IBasket,
-    private customer: ICustomer
+    private api: IProductApi,
+    private catalog: {
+      getItems(): IProduct[];
+      getItem(id: string): IProduct | undefined;
+      setItems(items: IProduct[]): void;
+    },
+    private basket: {
+      getItems(): IProduct[];
+      getTotalPrice(): number;
+      getTotalItems(): number;
+      hasItem(id: string): boolean;
+      addItem(item: IProduct): void;
+      removeItem(id: string): void;
+      clear(): void;
+    },
+    private customer: {
+      getData(): {
+        payment: TPayment;
+        address: string;
+        phone: string;
+        email: string;
+      };
+      setPayment(payment: TPayment): void;
+      setAddress(address: string): void;
+      setPhone(phone: string): void;
+      setEmail(email: string): void;
+      clear(): void;
+      checkValidity(): { [key: string]: string };
+    },
+    private views: IAppViews
   ) {
-    // Инициализация представлений
-    this.modal = new ModalView(
-      ensureElement<HTMLElement>("#modal-container"),
-      this.events
-    );
-
-    this.header = new HeaderView(
-      ensureElement<HTMLElement>(".header"),
-      this.events
-    );
-
-    this.gallery = new GalleryView(ensureElement<HTMLElement>(".gallery"));
-
-    this.basketView = new BasketView(
-      cloneTemplate<HTMLElement>("#basket"),
-      this.events
-    );
-
-    this.orderFormView = new OrderFormView(
-      cloneTemplate<HTMLElement>("#order"),
-      this.events
-    );
-
-    this.contactsFormView = new ContactsFormView(
-      cloneTemplate<HTMLElement>("#contacts"),
-      this.events
-    );
-
-    this.orderSuccessView = new OrderSuccessView(
-      cloneTemplate<HTMLElement>("#success"),
-      this.events
-    );
-
     this.setupEventListeners();
     this.loadProducts();
   }
@@ -103,13 +92,12 @@ export class App {
 
     this.events.on("basket:changed", () => {
       this.updateHeader();
-      if (this.currentModalType === "basket") {
-        this.updateBasketModal();
-      }
+      this.updateBasketModal();
     });
 
     this.events.on("basket:open", () => {
-      this.showBasketModal();
+      this.views.modal.open();
+      this.views.modal.content = this.views.basketView.render({});
     });
 
     this.events.on("order:start", () => {
@@ -118,53 +106,62 @@ export class App {
       }
     });
 
-    this.events.on("customer:changed", () => {
-      this.updateForms();
-    });
-
     this.events.on<{ payment: TPayment }>("order.payment:change", (data) => {
       this.customer.setPayment(data.payment);
+      this.events.emit("order:form:changed");
     });
 
     this.events.on<{ address: string }>("order.address:change", (data) => {
       this.customer.setAddress(data.address);
+      this.events.emit("order:form:changed");
+    });
+
+    this.events.on("order:form:changed", () => {
+      this.updateOrderForm();
     });
 
     this.events.on("order:submit", () => {
       const errors = this.customer.checkValidity();
+      const orderErrors = [errors.payment, errors.address].filter(Boolean);
 
-      if (!errors.payment && !errors.address) {
+      if (orderErrors.length === 0) {
         this.showContactsModal();
       } else {
-        this.showOrderModal();
+        this.updateOrderForm();
       }
     });
 
     this.events.on<{ email: string }>("contacts.email:change", (data) => {
       this.customer.setEmail(data.email);
+      this.events.emit("contacts:form:changed");
     });
 
     this.events.on<{ phone: string }>("contacts.phone:change", (data) => {
       this.customer.setPhone(data.phone);
+      this.events.emit("contacts:form:changed");
+    });
+
+    this.events.on("contacts:form:changed", () => {
+      this.updateContactsForm();
     });
 
     this.events.on("contacts:submit", () => {
       const errors = this.customer.checkValidity();
+      const contactErrors = [errors.email, errors.phone].filter(Boolean);
 
-      if (!errors.email && !errors.phone) {
+      if (contactErrors.length === 0) {
         this.processOrder();
       } else {
-        this.showContactsModal();
+        this.updateContactsForm();
       }
     });
 
-    // Добавлен обработчик для успешного заказа
     this.events.on("order:success", () => {
-      this.modal.close();
+      this.views.modal.close();
     });
 
     this.events.on("modal:close", () => {
-      this.currentModalType = null;
+      // Модальное окно закрыто
     });
 
     this.events.on<{ message: string }>("error", (error) => {
@@ -202,15 +199,10 @@ export class App {
       });
     });
 
-    this.gallery.items = cards;
+    this.views.gallery.items = cards;
   }
 
   private showProductModal(product: IProduct): void {
-    // Если уже открыто модальное окно с этим товаром, не открываем заново
-    if (this.currentModalType === "product" && this.modal.isOpen) {
-      return;
-    }
-
     const preview = new CardPreviewView(
       cloneTemplate<HTMLElement>("#card-preview"),
       {
@@ -220,14 +212,14 @@ export class App {
           } else {
             this.events.emit("product:add", { id: product.id });
           }
-          this.modal.close();
+          this.views.modal.close();
         },
       }
     );
 
     const isInBasket = this.basket.hasItem(product.id);
 
-    preview.render({
+    const previewElement = preview.render({
       title: product.title,
       price: product.price,
       category: product.category as TCategoryNames,
@@ -241,28 +233,12 @@ export class App {
       buttonDisabled: product.price === null,
     });
 
-    this.modal.open();
-    this.modal.content = preview.getDOMElement();
-    this.currentModalType = "product";
-  }
-
-  private showBasketModal(): void {
-    this.updateBasketModal();
-    this.modal.open();
-    this.modal.content = this.basketView.getDOMElement();
-    this.currentModalType = "basket";
+    this.views.modal.open();
+    this.views.modal.content = previewElement;
   }
 
   private updateBasketModal(): void {
     const items = this.basket.getItems();
-
-    // Используем getDOMElement() для доступа к DOM
-    if (
-      items.length === 0 &&
-      this.basketView.getDOMElement().querySelector(".basket__empty")
-    ) {
-      return;
-    }
 
     const basketItems = items.map((item, index) => {
       const card = new CardBasketView(
@@ -281,7 +257,7 @@ export class App {
       });
     });
 
-    this.basketView.render({
+    this.views.basketView.render({
       items: basketItems,
       total: this.basket.getTotalPrice(),
       canCheckout: items.length > 0,
@@ -289,10 +265,17 @@ export class App {
   }
 
   private showOrderModal(): void {
+    this.updateOrderForm();
+    const orderElement = this.views.orderFormView.render({});
+    this.views.modal.open();
+    this.views.modal.content = orderElement;
+  }
+
+  private updateOrderForm(): void {
     const customerData = this.customer.getData();
     const errors = this.customer.checkValidity();
 
-    this.orderFormView.render({
+    this.views.orderFormView.render({
       payment: customerData.payment,
       address: customerData.address,
       valid: !errors.payment && !errors.address,
@@ -300,17 +283,20 @@ export class App {
         (error): error is string => Boolean(error)
       ),
     });
-
-    this.modal.open();
-    this.modal.content = this.orderFormView.getDOMElement();
-    this.currentModalType = "order";
   }
 
   private showContactsModal(): void {
+    this.updateContactsForm();
+    const contactsElement = this.views.contactsFormView.render({});
+    this.views.modal.open();
+    this.views.modal.content = contactsElement;
+  }
+
+  private updateContactsForm(): void {
     const customerData = this.customer.getData();
     const errors = this.customer.checkValidity();
 
-    this.contactsFormView.render({
+    this.views.contactsFormView.render({
       email: customerData.email,
       phone: customerData.phone,
       valid: !errors.email && !errors.phone,
@@ -318,26 +304,12 @@ export class App {
         Boolean(error)
       ),
     });
-
-    this.modal.open();
-    this.modal.content = this.contactsFormView.getDOMElement();
-    this.currentModalType = "contacts";
   }
 
-  private updateForms(): void {
-    if (this.modal.isOpen && this.currentModalType) {
-      switch (this.currentModalType) {
-        case "order":
-          this.showOrderModal();
-          break;
-        case "contacts":
-          this.showContactsModal();
-          break;
-        case "basket":
-          this.updateBasketModal();
-          break;
-      }
-    }
+  private updateHeader(): void {
+    this.views.header.render({
+      count: this.basket.getTotalItems(),
+    });
   }
 
   private async processOrder(): Promise<void> {
@@ -351,12 +323,11 @@ export class App {
       const result = await this.api.order(orderData);
       console.log("Заказ оформлен успешно, ID:", result.id);
 
-      this.orderSuccessView.render({
+      const successElement = this.views.orderSuccessView.render({
         total: this.basket.getTotalPrice(),
       });
 
-      this.modal.content = this.orderSuccessView.getDOMElement();
-      this.currentModalType = "success";
+      this.views.modal.content = successElement;
 
       this.basket.clear();
       this.customer.clear();
@@ -364,9 +335,5 @@ export class App {
       console.error("Ошибка оформления заказа:", error);
       this.events.emit("error", { message: "Не удалось оформить заказ" });
     }
-  }
-
-  private updateHeader(): void {
-    this.header.count = this.basket.getTotalItems();
   }
 }

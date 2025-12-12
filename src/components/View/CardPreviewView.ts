@@ -2,7 +2,14 @@ import { CardView } from "./CardView";
 import { IProduct, ICardActions } from "../../types";
 import { categoryMap } from "../../utils/constants";
 
-export class CardPreviewView extends CardView<IProduct> {
+// Расширяем интерфейс для превью
+interface ICardPreviewData extends Partial<IProduct> {
+  description?: string;
+  buttonText?: string;
+  buttonDisabled?: boolean;
+}
+
+export class CardPreviewView extends CardView<ICardPreviewData> {
   private categoryElement: HTMLElement | null = null;
   private imageElement: HTMLImageElement | null = null;
   private descriptionElement: HTMLElement | null = null;
@@ -57,37 +64,4 @@ export class CardPreviewView extends CardView<IProduct> {
       this.setDisabled(this.buttonElement, value);
     }
   }
-
-  render(
-    data: Partial<IProduct> & {
-      description?: string;
-      buttonText?: string;
-      buttonDisabled?: boolean;
-    }
-  ): HTMLElement {
-    super.render(data);
-
-    if (data.category && this.categoryElement) {
-      this.category = data.category;
-    }
-
-    if (data.image && this.imageElement) {
-      this.image = data.image;
-    }
-
-    if (data.description && this.descriptionElement) {
-      this.description = data.description;
-    }
-
-    if (data.buttonText && this.buttonElement) {
-      this.buttonText = data.buttonText;
-    }
-
-    if (data.buttonDisabled !== undefined && this.buttonElement) {
-      this.buttonDisabled = data.buttonDisabled;
-    }
-
-    return this.container;
-  }
 }
-

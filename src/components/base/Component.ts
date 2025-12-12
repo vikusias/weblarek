@@ -4,11 +4,6 @@
 export abstract class Component<T> {
   protected constructor(protected readonly container: HTMLElement) {}
 
-  // Метод для получения DOM-элемента (не данных!)
-  getDOMElement(): HTMLElement {
-    return this.container;
-  }
-
   protected setImage(
     element: HTMLImageElement,
     src: string,

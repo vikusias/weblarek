@@ -2,7 +2,12 @@ import { CardView } from "./CardView";
 import { IProduct, ICardActions } from "../../types";
 import { categoryMap } from "../../utils/constants";
 
-export class CardCatalogView extends CardView<IProduct> {
+// Расширяем интерфейс для каталога
+interface ICardCatalogData extends Partial<IProduct> {
+  image?: string;
+}
+
+export class CardCatalogView extends CardView<ICardCatalogData> {
   private categoryElement: HTMLElement | null = null;
   private imageElement: HTMLImageElement | null = null;
 
@@ -36,19 +41,5 @@ export class CardCatalogView extends CardView<IProduct> {
     if (this.imageElement) {
       this.setImage(this.imageElement, value, "Изображение товара");
     }
-  }
-
-  render(data: Partial<IProduct>): HTMLElement {
-    super.render(data);
-
-    if (data.category && this.categoryElement) {
-      this.category = data.category;
-    }
-
-    if (data.image && this.imageElement) {
-      this.image = data.image;
-    }
-
-    return this.container;
   }
 }

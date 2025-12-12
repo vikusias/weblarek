@@ -26,10 +26,5 @@ export abstract class FormView<T> extends Component<T> {
   set errors(value: string[]) {
     const text = value.join(", ");
     this.setText(this.errorsElement, text);
-    this.toggleClass(
-      this.errorsElement,
-      "form__errors_visible",
-      text.length > 0
-    );
   }
 }

@@ -53,26 +53,4 @@ export class OrderFormView extends FormView<IOrderFormData> {
   set address(value: string) {
     this.addressInput.value = value;
   }
-
-  render(data: Partial<IOrderFormData>): HTMLElement {
-    super.render(data);
-
-    if (data.payment) {
-      this.payment = data.payment;
-    }
-
-    if (data.address !== undefined) {
-      this.address = data.address;
-    }
-
-    if (data.valid !== undefined) {
-      this.valid = data.valid;
-    }
-
-    if (data.errors) {
-      this.errors = data.errors;
-    }
-
-    return this.container;
-  }
 }

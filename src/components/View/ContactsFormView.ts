@@ -46,26 +46,4 @@ export class ContactsFormView extends FormView<IContactsFormData> {
   set phone(value: string) {
     this.phoneInput.value = value;
   }
-
-  render(data: Partial<IContactsFormData>): HTMLElement {
-    super.render(data);
-
-    if (data.email !== undefined) {
-      this.email = data.email;
-    }
-
-    if (data.phone !== undefined) {
-      this.phone = data.phone;
-    }
-
-    if (data.valid !== undefined) {
-      this.valid = data.valid;
-    }
-
-    if (data.errors) {
-      this.errors = data.errors;
-    }
-
-    return this.container;
-  }
 }
