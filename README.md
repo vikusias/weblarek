@@ -541,9 +541,11 @@ constructor(container: HTMLElement, events: IEvents)
 
 FormView
 
+```
+
 Базовый класс для всех форм
 
-```
+
 
 Ключевые особенности:
 
