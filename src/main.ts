@@ -1,4 +1,5 @@
 import "./scss/styles.scss";
+
 import { EventEmitter } from "./components/base/Events";
 import { Api } from "./components/base/Api";
 import { ProductApi } from "./components/ProductApi";
@@ -16,8 +17,14 @@ import { BasketView } from "./components/View/BasketView";
 import { OrderFormView } from "./components/View/OrderFormView";
 import { ContactsFormView } from "./components/View/ContactsFormView";
 import { OrderSuccessView } from "./components/View/OrderSuccessView";
+
+import { CardCatalogView } from "./components/View/CardCatalogView";
+import { CardPreviewView } from "./components/View/CardPreviewView";
+import { CardBasketView } from "./components/View/CardBasketView";
+
 import { cloneTemplate, ensureElement } from "./utils/utils";
 
+// Создание EventEmitter
 const events = new EventEmitter();
 
 // Создание API
@@ -49,9 +56,40 @@ const views = {
   ),
 };
 
+// Создание фабрик для карточек
+const cardCatalogViewFactory = {
+  create: (onClick: () => void) =>
+    new CardCatalogView(cloneTemplate<HTMLElement>("#card-catalog"), {
+      onClick,
+    }),
+};
+
+const cardPreviewViewFactory = {
+  create: (onClick: () => void) =>
+    new CardPreviewView(cloneTemplate<HTMLElement>("#card-preview"), {
+      onClick,
+    }),
+};
+
+const cardBasketViewFactory = {
+  create: (onClick: () => void) =>
+    new CardBasketView(cloneTemplate<HTMLElement>("#card-basket"), { onClick }),
+};
+
 // Создание и инициализация приложения
 try {
-  new App(events, productApi, catalog, basket, customer, views);
+  new App(
+    events,
+    productApi,
+    catalog,
+    basket,
+    customer,
+    views,
+    cardCatalogViewFactory,
+    cardPreviewViewFactory,
+    cardBasketViewFactory
+  );
+
   console.log("Приложение Web-Ларёк запущено!");
 } catch (error) {
   console.error("Ошибка при запуске приложения:", error);

@@ -1,7 +1,5 @@
 import { IBuyer, TBuyerValidityMessages, TPayment } from "../../types";
 
-import { validateEmail, validatePhone } from "../../utils/utils";
-
 export class Customer {
   private payment: TPayment = "";
 
@@ -62,20 +60,12 @@ export class Customer {
 
     if (!this.phone.trim()) {
       errors.phone = "Необходимо указать номер телефона";
-    } else if (!validatePhone(this.phone)) {
-      errors.phone = "Неверный формат телефона";
     }
 
     if (!this.email.trim()) {
       errors.email = "Необходимо указать email";
-    } else if (!validateEmail(this.email)) {
-      errors.email = "Неверный формат email";
     }
 
     return errors;
-  }
-
-  isValid(): boolean {
-    return Object.keys(this.checkValidity()).length === 0;
   }
 }

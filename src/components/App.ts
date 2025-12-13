@@ -1,15 +1,11 @@
 import { IEvents } from "./base/Events";
 import { ModalView } from "./View/ModalView";
-import { CardCatalogView } from "./View/CardCatalogView";
-import { CardPreviewView } from "./View/CardPreviewView";
-import { CardBasketView } from "./View/CardBasketView";
 import { BasketView } from "./View/BasketView";
 import { OrderFormView } from "./View/OrderFormView";
 import { ContactsFormView } from "./View/ContactsFormView";
 import { OrderSuccessView } from "./View/OrderSuccessView";
 import { HeaderView } from "./View/HeaderView";
 import { GalleryView } from "./View/GalleryView";
-import { cloneTemplate } from "../utils/utils";
 import { IProduct, IOrderApiRequest, TPayment, TCategoryNames } from "../types";
 import { CDN_URL } from "../utils/constants";
 
@@ -17,6 +13,49 @@ import { CDN_URL } from "../utils/constants";
 interface IProductApi {
   getProducts(): Promise<{ items: IProduct[] }>;
   order(data: IOrderApiRequest): Promise<{ id: string }>;
+}
+
+// Интерфейсы для представлений
+interface ICardCatalogView {
+  render(data: {
+    title: string;
+    price: number | null;
+    category: TCategoryNames;
+    image: string;
+  }): HTMLElement;
+}
+
+interface ICardPreviewView {
+  render(data: {
+    title: string;
+    price: number | null;
+    category: TCategoryNames;
+    image: string;
+    description: string;
+    buttonText: string;
+    buttonDisabled: boolean;
+  }): HTMLElement;
+}
+
+interface ICardBasketView {
+  render(data: {
+    title: string;
+    price: number | null;
+    index: number;
+  }): HTMLElement;
+}
+
+// Фабричные интерфейсы для создания представлений
+interface ICardCatalogViewFactory {
+  create(onClick: () => void): ICardCatalogView;
+}
+
+interface ICardPreviewViewFactory {
+  create(onClick: () => void): ICardPreviewView;
+}
+
+interface ICardBasketViewFactory {
+  create(onClick: () => void): ICardBasketView;
 }
 
 interface IAppViews {
@@ -61,7 +100,10 @@ export class App {
       clear(): void;
       checkValidity(): { [key: string]: string };
     },
-    private views: IAppViews
+    private views: IAppViews,
+    private cardCatalogViewFactory: ICardCatalogViewFactory,
+    private cardPreviewViewFactory: ICardPreviewViewFactory,
+    private cardBasketViewFactory: ICardBasketViewFactory
   ) {
     this.setupEventListeners();
     this.loadProducts();
@@ -182,14 +224,9 @@ export class App {
   private renderCatalog(): void {
     const items = this.catalog.getItems();
     const cards = items.map((item) => {
-      const card = new CardCatalogView(
-        cloneTemplate<HTMLElement>("#card-catalog"),
-        {
-          onClick: () => {
-            this.events.emit("product:select", { id: item.id });
-          },
-        }
-      );
+      const card = this.cardCatalogViewFactory.create(() => {
+        this.events.emit("product:select", { id: item.id });
+      });
 
       return card.render({
         title: item.title,
@@ -203,19 +240,14 @@ export class App {
   }
 
   private showProductModal(product: IProduct): void {
-    const preview = new CardPreviewView(
-      cloneTemplate<HTMLElement>("#card-preview"),
-      {
-        onClick: () => {
-          if (this.basket.hasItem(product.id)) {
-            this.events.emit("product:remove", { id: product.id });
-          } else {
-            this.events.emit("product:add", { id: product.id });
-          }
-          this.views.modal.close();
-        },
+    const preview = this.cardPreviewViewFactory.create(() => {
+      if (this.basket.hasItem(product.id)) {
+        this.events.emit("product:remove", { id: product.id });
+      } else {
+        this.events.emit("product:add", { id: product.id });
       }
-    );
+      this.views.modal.close();
+    });
 
     const isInBasket = this.basket.hasItem(product.id);
 
@@ -241,14 +273,9 @@ export class App {
     const items = this.basket.getItems();
 
     const basketItems = items.map((item, index) => {
-      const card = new CardBasketView(
-        cloneTemplate<HTMLElement>("#card-basket"),
-        {
-          onClick: () => {
-            this.events.emit("product:remove", { id: item.id });
-          },
-        }
-      );
+      const card = this.cardBasketViewFactory.create(() => {
+        this.events.emit("product:remove", { id: item.id });
+      });
 
       return card.render({
         title: item.title,
